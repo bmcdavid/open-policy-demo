@@ -1,0 +1,214 @@
+{
+  "realm": "opa-demo",
+  "enabled": true,
+  "sslRequired": "none",
+  "attributes": {
+    "unmanagedAttributePolicy": "ENABLED"
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "reader"
+      },
+      {
+        "name": "editor"
+      },
+      {
+        "name": "admin"
+      },
+      {
+        "name": "platform-admin"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "demo-api",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String",
+            "claim.name": "roles",
+            "multivalued": "true"
+          }
+        },
+        {
+          "name": "tenant",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String",
+            "claim.name": "tenant",
+            "user.attribute": "tenant"
+          }
+        },
+        {
+          "name": "audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "demo-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "reader-acme",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "reader-acme@example.test",
+      "firstName": "reader-acme",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "acme"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "reader"
+      ]
+    },
+    {
+      "username": "editor-acme",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "editor-acme@example.test",
+      "firstName": "editor-acme",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "acme"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "editor"
+      ]
+    },
+    {
+      "username": "admin-acme",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin-acme@example.test",
+      "firstName": "admin-acme",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "acme"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "username": "editor-globex",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "editor-globex@example.test",
+      "firstName": "editor-globex",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "globex"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "editor"
+      ]
+    },
+    {
+      "username": "admin-globex",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin-globex@example.test",
+      "firstName": "admin-globex",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "globex"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "username": "platform-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "platform-admin@example.test",
+      "firstName": "platform-admin",
+      "lastName": "Demo",
+      "attributes": {
+        "tenant": [
+          "platform"
+        ]
+      },
+      "credentials": [
+        {
+          "temporary": false,
+          "type": "password",
+          "value": "Passw0rd!"
+        }
+      ],
+      "realmRoles": [
+        "platform-admin"
+      ]
+    }
+  ]
+}
