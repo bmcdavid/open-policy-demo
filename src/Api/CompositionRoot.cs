@@ -1,4 +1,5 @@
 using Api.Features.Authorization;
+using Api.Features.Documents;
 using Api.Features.Home;
 using Microsoft.AspNetCore.Builder;
 
@@ -11,5 +12,6 @@ internal static class CompositionRoot
     {
         builder.ConfigureAuthorization();
         builder.ConfigureHome();
+        builder.ConfigureDocuments();
     }
 }

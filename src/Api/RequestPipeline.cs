@@ -1,4 +1,5 @@
 using Core;
+using Api.Features.Documents;
 using Api.Features.Home;
 using Microsoft.AspNetCore.Builder;
 
@@ -21,6 +22,7 @@ internal static class RequestPipeline
         app.UseAuthorization();
         app.UseBuildInfoRoute("/buildinfo");
         app.MapHomeEndpoints();
+        app.MapDocumentEndpoints();
 
         return app;
     }
