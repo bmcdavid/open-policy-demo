@@ -40,21 +40,21 @@ grant_type=password&client_id=demo-api&username=platform-admin&password=Passw0rd
 
 ### Who am I (claims the policy sees)
 GET {{api}}/whoami
-Authorization: Bearer {{readerAcme.response.body.access_token}}
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
 
 ### reader-acme lists acme documents in dev: allowed
 GET {{api}}/documents
-Authorization: Bearer {{readerAcme.response.body.access_token}}
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
 X-Environment: {{environment}}
 
 ### reader-acme lists globex documents: 403 cross-tenant access denied
 GET {{api}}/documents?tenant=globex
-Authorization: Bearer {{readerAcme.response.body.access_token}}
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
 X-Environment: {{environment}}
 
 ### editor-acme creates a document in dev: allowed (201)
 POST {{api}}/documents
-Authorization: Bearer {{editorAcme.response.body.access_token}}
+Authorization: Bearer {{editorAcme.response.body.$.access_token}}
 X-Environment: dev
 Content-Type: application/json
 
@@ -62,7 +62,7 @@ Content-Type: application/json
 
 ### editor-acme creates in prod: 403 writes in prod require admin
 POST {{api}}/documents
-Authorization: Bearer {{editorAcme.response.body.access_token}}
+Authorization: Bearer {{editorAcme.response.body.$.access_token}}
 X-Environment: prod
 Content-Type: application/json
 
@@ -70,7 +70,7 @@ Content-Type: application/json
 
 ### admin-acme creates in prod: allowed
 POST {{api}}/documents
-Authorization: Bearer {{adminAcme.response.body.access_token}}
+Authorization: Bearer {{adminAcme.response.body.$.access_token}}
 X-Environment: prod
 Content-Type: application/json
 
@@ -78,7 +78,7 @@ Content-Type: application/json
 
 ### editor-globex creates a document for acme: 403 cross-tenant access denied
 POST {{api}}/documents
-Authorization: Bearer {{editorGlobex.response.body.access_token}}
+Authorization: Bearer {{editorGlobex.response.body.$.access_token}}
 X-Environment: dev
 Content-Type: application/json
 
@@ -86,9 +86,9 @@ Content-Type: application/json
 
 ### platform-admin lists globex in prod: allowed (crosses tenants)
 GET {{api}}/documents?tenant=globex
-Authorization: Bearer {{platformAdmin.response.body.access_token}}
+Authorization: Bearer {{platformAdmin.response.body.$.access_token}}
 X-Environment: prod
 
 ### Missing X-Environment: 400
 GET {{api}}/documents
-Authorization: Bearer {{readerAcme.response.body.access_token}}
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
