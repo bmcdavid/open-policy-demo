@@ -7,6 +7,7 @@
     <File Path="global.json" />
     <File Path="README.md" />
     <File Path="requests.http" />
+    <File Path="requests.rider.http" />
   </Folder>
   <Project Path="src/Api/Api.csproj" />
   <Project Path="src/AppHost/AppHost.csproj" />
