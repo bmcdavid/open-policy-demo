@@ -17,6 +17,16 @@ var keycloak = builder.AddKeycloak("keycloak")
     .WithHttpEndpoint(port: 8080, targetPort: 8080, name: KeycloakEndpoint)
     .WithRealmImport("./keycloak");
 
+keycloak.WithUrls(context =>
+{
+    var endpoint = context.GetEndpoint("http");
+    context.Urls.Add(new ResourceUrlAnnotation
+    {
+        Url = $"{endpoint?.Url}/realms/opa-demo/account",
+        DisplayText = "Account Login (opa-demo)"
+    });
+});
+
 // Watches policies/, runs `opa test`, and publishes bundle.tar.gz to the shared volume.
 var policyBuilder = builder.AddDockerfile("policy-builder", Path.Combine(infraPath, "policy-builder"))
     .WithBindMount(policiesPath, "/policies", isReadOnly: true)
