@@ -92,7 +92,8 @@
         }
       ],
       "realmRoles": [
-        "reader"
+        "reader",
+        "default-roles-opa-demo"
       ]
     },
     {
@@ -116,7 +117,13 @@
       ],
       "realmRoles": [
         "editor"
-      ]
+      ],
+      "clientRoles": {
+        "account": [
+          "view-profile",
+          "manage-account"
+        ]
+      }
     },
     {
       "username": "admin-acme",
