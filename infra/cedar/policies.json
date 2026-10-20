@@ -1,0 +1,30 @@
+[
+  {
+    "id": "role_read",
+    "content": "permit (principal, action in [Action::\"list\", Action::\"read\"], resource) when { context.roles.containsAny([\"reader\", \"editor\", \"admin\", \"platform-admin\"]) };"
+  },
+  {
+    "id": "role_write",
+    "content": "permit (principal, action in [Action::\"create\", Action::\"update\"], resource) when { context.roles.containsAny([\"editor\", \"admin\", \"platform-admin\"]) };"
+  },
+  {
+    "id": "role_delete",
+    "content": "permit (principal, action == Action::\"delete\", resource) when { context.roles.containsAny([\"admin\", \"platform-admin\"]) };"
+  },
+  {
+    "id": "cross-tenant access denied",
+    "content": "forbid (principal, action, resource) when { !(context.roles.contains(\"platform-admin\")) && (context.tenant == \"\" || context.tenant != context.resource_tenant) };"
+  },
+  {
+    "id": "unknown environment",
+    "content": "forbid (principal, action, resource) when { context.environment != \"dev\" && context.environment != \"staging\" && context.environment != \"prod\" };"
+  },
+  {
+    "id": "writes in prod require admin",
+    "content": "forbid (principal, action in [Action::\"create\", Action::\"update\"], resource) when { context.environment == \"prod\" && !(context.roles.containsAny([\"admin\", \"platform-admin\"])) };"
+  },
+  {
+    "id": "deletes in prod are restricted to platform-admin",
+    "content": "forbid (principal, action == Action::\"delete\", resource) when { context.environment == \"prod\" && !(context.roles.contains(\"platform-admin\")) };"
+  }
+]

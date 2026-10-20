@@ -18,6 +18,8 @@ public sealed class AppHostFixture : IAsyncLifetime
 
     public Uri OpaUri { get; private set; } = null!;
 
+    public Uri CedarUri { get; private set; } = null!;
+
     public HttpClient ApiClient { get; private set; } = null!;
 
     public async ValueTask InitializeAsync()
@@ -30,6 +32,7 @@ public sealed class AppHostFixture : IAsyncLifetime
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("api", timeout.Token);
 
         OpaUri = _app.GetEndpoint("opa", "http");
+        CedarUri = _app.GetEndpoint("cedar", "http");
         KeycloakUri = _app.GetEndpoint("keycloak", "oidc");
         ApiClient = _app.CreateHttpClient("api");
     }

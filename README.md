@@ -20,9 +20,12 @@ The Aspire dashboard lists every endpoint. Use the Keycloak `oidc` and Api `http
 | `policy-builder` | `infra/policy-builder` (wraps `openpolicyagent/opa`) | Watches `policies/`, runs `opa test`, publishes `bundle.tar.gz` |
 | `bundle-server` | nginx | Serves the bundle |
 | `opa` | `openpolicyagent/opa` | Polls the bundle every 1-3 seconds, answers `POST /v1/data/authz/decision` |
-| `api` | `src/Api` | Validates the JWT, loads the document, asks OPA, returns 403 with reasons on deny |
+| `cedar` | `permitio/cedar-agent` | Cedar sidecar agent, answers `POST /v1/is_authorized` from `infra/cedar/policies.json` |
+| `api` | `src/Api` | Validates the JWT, loads the document, asks OPA or Cedar, returns 403 with reasons on deny |
 
-The Api holds no allow/deny rules. Only `policies/authz.rego` does.
+Both `opa` and `cedar` sidecars start in Aspire. Set `POLICY_ENGINE=cedar` or `POLICY_ENGINE=opa` (default) in `api` environment/launchSettings to switch engines.
+
+The Api holds no allow/deny rules. Only `policies/authz.rego` (for OPA) and `policies/authz.cedar` (for Cedar) do.
 
 ## Users
 

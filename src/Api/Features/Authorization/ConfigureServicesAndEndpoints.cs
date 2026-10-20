@@ -30,11 +30,28 @@ internal static class ConfigureServicesAndEndpoints
                 };
             });
 
-        builder.Services.AddHttpClient<IPolicyClient, OpaPolicyClient>(http =>
+        var policyEngine = builder.Configuration["POLICY_ENGINE"]
+            ?? builder.Configuration["PolicyEngine:Provider"]
+            ?? builder.Configuration["Policy:Engine"]
+            ?? "opa";
+
+        if (string.Equals(policyEngine, "cedar", StringComparison.OrdinalIgnoreCase))
         {
-            http.BaseAddress = new Uri(builder.Configuration["Opa:BaseAddress"] ?? "http://localhost:8181");
-            http.Timeout = TimeSpan.FromSeconds(2);
-        });
+            builder.Services.AddHttpClient<IPolicyClient, CedarPolicyClient>(http =>
+            {
+                http.BaseAddress = new Uri(builder.Configuration["Cedar:BaseAddress"] ?? "http://localhost:8180");
+                http.Timeout = TimeSpan.FromSeconds(2);
+            });
+        }
+        else
+        {
+            builder.Services.AddHttpClient<IPolicyClient, OpaPolicyClient>(http =>
+            {
+                http.BaseAddress = new Uri(builder.Configuration["Opa:BaseAddress"] ?? "http://localhost:8181");
+                http.Timeout = TimeSpan.FromSeconds(2);
+            });
+        }
+
         builder.Services.AddTransient<IPolicyEnforcer, PolicyEnforcer>();
         return builder;
     }

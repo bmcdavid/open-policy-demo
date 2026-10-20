@@ -55,7 +55,20 @@ public sealed class ScenarioMatrixTests(AppHostFixture fixture, ITestOutputHelpe
     {
         using var http = new HttpClient { BaseAddress = fixture.OpaUri };
         var client = new OpaPolicyClient(http);
-        var table = new StringBuilder("user | resource tenant | env | action | decision | reasons\n");
+        await AssertMatrixAsync(client, "OPA");
+    }
+
+    [Fact]
+    public async Task Cedar_matrix_matches_expected_decisions()
+    {
+        using var http = new HttpClient { BaseAddress = fixture.CedarUri };
+        var client = new CedarPolicyClient(http);
+        await AssertMatrixAsync(client, "Cedar");
+    }
+
+    private async Task AssertMatrixAsync(IPolicyClient client, string engineName)
+    {
+        var table = new StringBuilder($"[{engineName}] user | resource tenant | env | action | decision | reasons\n");
         var mismatches = new List<string>();
 
         foreach (var (user, roles, tenant) in Users)

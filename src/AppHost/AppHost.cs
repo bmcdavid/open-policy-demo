@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 
@@ -45,12 +45,21 @@ var opa = builder.AddContainer("opa", "openpolicyagent/opa", "latest")
     .WithHttpHealthCheck("/health?bundles")
     .WaitFor(bundleServer);
 
+var cedar = builder.AddContainer("cedar", "permitio/cedar-agent", "latest")
+    .WithEnvironment("CEDAR_AGENT_ADDR", "0.0.0.0")
+    .WithEnvironment("CEDAR_AGENT_PORT", "8180")
+    .WithEnvironment("CEDAR_AGENT_POLICIES", "/config/policies.json")
+    .WithBindMount(Path.Combine(infraPath, "cedar", "policies.json"), "/config/policies.json", isReadOnly: true)
+    .WithHttpEndpoint(port: 8180, targetPort: 8180, name: "http");
+
 builder.AddProject<Projects.Api>("api")
     .WithEnvironment("Auth__Authority", ReferenceExpression.Create($"{keycloak.GetEndpoint(KeycloakEndpoint)}/realms/opa-demo"))
     .WithEnvironment("Auth__Audience", "demo-api")
     .WithEnvironment("Opa__BaseAddress", opa.GetEndpoint("http"))
+    .WithEnvironment("Cedar__BaseAddress", cedar.GetEndpoint("http"))
     .WithHttpHealthCheck("/buildinfo")
     .WaitFor(opa)
+    .WaitFor(cedar)
     .WaitFor(keycloak);
 
 await builder.Build().RunAsync();
