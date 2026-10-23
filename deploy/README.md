@@ -9,7 +9,7 @@ Design: [`docs/superpowers/specs/2026-10-23-k8s-gitops-lab-design.md`](../docs/s
 ## Prerequisites
 
 - Docker Desktop with 12 GB memory.
-- `brew install kind helm kustomize sops age argocd oras gator` (plus `kubectl` and the .NET SDK in `global.json`).
+- `brew install kind helm kustomize sops ksops age argocd oras gator` (plus `kubectl` and the .NET SDK in `global.json`).
   `deploy/bootstrap/check-tools.sh` reports anything missing.
 
 ## Bootstrap from nothing

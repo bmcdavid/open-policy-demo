@@ -12,7 +12,7 @@ hint() {
 }
 
 missing=0
-for tool in docker kind kubectl helm kustomize sops age argocd oras gator dotnet; do
+for tool in docker kind kubectl helm kustomize sops ksops age argocd oras gator dotnet; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     echo "missing: $tool — $(hint "$tool")" >&2
     missing=1

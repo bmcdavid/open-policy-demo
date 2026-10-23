@@ -1,0 +1,37 @@
+# dev: accepts every environment header, defaults to dev, decides with OPA.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: app-dev
+resources:
+  - ../../base
+# Image tags are the deploy contract: promotion copies these (and the bundle tag in opa-config.yaml) to the next env.
+images:
+  - name: localhost:5001/api
+    newTag: 6be2f45
+  - name: localhost:5001/worker
+    newTag: 6be2f45
+  - name: localhost:5001/cedar-policies
+    newTag: 2a95bd8
+configMapGenerator:
+  - name: opa-config
+    files:
+      - opa-config.yaml
+  # Env vars for the api and worker containers; a change renames the ConfigMap (hash), which rolls both pods.
+  - name: app-settings
+    literals:
+      - POLICY_ENGINE=opa
+      - Deployment__AllowedEnvironments__0=dev
+      - Deployment__AllowedEnvironments__1=staging
+      - Deployment__AllowedEnvironments__2=prod
+      - Deployment__DefaultEnvironment=dev
+      - Cosmos__Database=policy-demo-dev
+generators:
+  - secrets/secret-generator.yaml
+patches:
+  - target:
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.dev.localtest.me
