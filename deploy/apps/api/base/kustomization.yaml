@@ -1,0 +1,10 @@
+# Base: what every environment shares. Overlays (overlays/<env>) set the namespace, image tags, per-env settings,
+# the OPA config, the connection-string Secret and the hostname. Kustomize merges them; nothing is templated.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - serviceaccount.yaml
+  - api-deployment.yaml
+  - worker-deployment.yaml
+  - service.yaml
+  - httproute.yaml

@@ -54,7 +54,7 @@ deny contains "cross-tenant access denied" if {
 
 deny contains "unknown environment" if not input.environment in known_environments
 
-deny contains "writes in prod require admin" if {
+deny contains "writes in prod require the admin role" if {
 	input.environment == "prod"
 	input.action in {"create", "update"}
 	not is_admin

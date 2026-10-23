@@ -43,7 +43,7 @@ test_admin_cannot_delete_prod if {
 test_editor_cannot_update_prod if {
 	i := make_input(["editor"], "acme", "prod", "update", "acme")
 	denied(i)
-	reason_in(i, "writes in prod require admin")
+	reason_in(i, "writes in prod require the admin role")
 }
 
 test_admin_can_update_prod if allowed(make_input(["admin"], "acme", "prod", "update", "acme"))

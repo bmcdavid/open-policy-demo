@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AppHost.Cedar;
+namespace CedarPolicyTool;
 
 /// <summary>One entry of the JSON array that permitio/cedar-agent loads: an id and the raw Cedar statement.</summary>
 internal sealed record AgentPolicy(string Id, string Content);

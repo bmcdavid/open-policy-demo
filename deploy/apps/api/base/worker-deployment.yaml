@@ -1,0 +1,39 @@
+# The Worker relays the outbox to RabbitMQ and consumes audit and cache-invalidation events. No sidecars, no Service:
+# nothing calls it. It shares its environment's Cosmos database, vhost and Valkey index with the Api.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app.kubernetes.io/name: worker
+    owner: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: worker
+        owner: lab
+    spec:
+      serviceAccountName: worker
+      containers:
+        - name: worker
+          image: localhost:5001/worker:unset
+          envFrom:
+            - configMapRef:
+                name: app-settings
+            - secretRef:
+                name: connections
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: Production
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://aspire-dashboard.infra:18889
+            - name: OTEL_SERVICE_NAME
+              value: worker
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: "1", memory: 384Mi }

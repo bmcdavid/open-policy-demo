@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Core.Features.Documents;
@@ -22,10 +23,10 @@ public static class CosmosOutbox
     }
 
     /// <summary>Writes a standalone outbox item; a failure surfaces as <see cref="StoreUnavailableException"/> (fail closed).</summary>
-    public static WriteOutboxEvent Write(CosmosClient client)
+    public static WriteOutboxEvent Write(Database database)
     {
-        ArgumentNullException.ThrowIfNull(client);
-        var container = client.GetContainer(CosmosNames.Database, CosmosNames.Documents);
+        ArgumentNullException.ThrowIfNull(database);
+        var container = database.GetContainer(CosmosNames.Documents);
 
         return async (outboxEvent, cancellationToken) =>
         {
@@ -57,7 +58,9 @@ public static class CosmosOutbox
                 continue;
             }
 
-            await publish(Read(change), cancellationToken);
+            var outboxEvent = Read(change);
+            using var activity = EventTracing.Start("relay", outboxEvent, ActivityKind.Producer);
+            await publish(outboxEvent, cancellationToken);
         }
     }
 

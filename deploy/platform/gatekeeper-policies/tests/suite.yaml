@@ -1,0 +1,68 @@
+# gator verify: each constraint against one manifest that must pass (the real dev api pod) and one that must fail.
+kind: Suite
+apiVersion: test.gatekeeper.sh/v1alpha1
+metadata:
+  name: lab-guardrails
+tests:
+  - name: requests-and-limits
+    template: ../templates/k8srequiredresources.yaml
+    constraint: ../constraints/required-resources.yaml
+    cases:
+      - name: real-dev-api-pod
+        object: fixtures/api-pod-dev.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: no }]
+      - name: sidecar-init-container-without-limits
+        object: fixtures/init-container-without-limits.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: 1, message: "container <cedar> does not have" }]
+  - name: no-latest-or-untagged
+    template: ../templates/k8sdisallowedtags.yaml
+    constraint: ../constraints/disallowed-tags.yaml
+    cases:
+      - name: real-dev-api-pod
+        object: fixtures/api-pod-dev.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: no }]
+      - name: latest-sidecar
+        object: fixtures/latest-sidecar.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: 1, message: "container <opa> uses a disallowed tag" }]
+  - name: app-images-from-local-registry
+    template: ../templates/k8sallowedrepos.yaml
+    constraint: ../constraints/allowed-repos.yaml
+    cases:
+      - name: real-dev-api-pod
+        object: fixtures/api-pod-dev.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: no }]
+      - name: infra-may-use-public-images
+        object: fixtures/infra-pod-public-image.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: no }]
+      - name: docker-hub-image-in-app-dev
+        object: fixtures/dockerhub-sidecar.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: 1, message: "invalid image repo" }]
+  - name: name-and-owner-labels
+    template: ../templates/k8srequiredlabels.yaml
+    constraint: ../constraints/required-labels.yaml
+    cases:
+      - name: real-dev-api-pod
+        object: fixtures/api-pod-dev.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: no }]
+      - name: missing-owner
+        object: fixtures/missing-owner.yaml
+        inventory: [fixtures/namespaces.yaml]
+        assertions: [{ violations: 1, message: "owner" }]
+  - name: prod-api-min-two-replicas
+    template: ../templates/k8sreplicalimits.yaml
+    constraint: ../constraints/prod-api-replicas.yaml
+    cases:
+      - name: two-replicas
+        object: fixtures/prod-api-2-replica.yaml
+        assertions: [{ violations: no }]
+      - name: one-replica
+        object: fixtures/prod-api-1-replica.yaml
+        assertions: [{ violations: 1 }]

@@ -1,0 +1,19 @@
+# Every container (including native sidecars, which are init containers) declares CPU and memory requests and limits.
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredResources
+metadata:
+  name: requests-and-limits
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: [Pod]
+    namespaceSelector:
+      matchExpressions:
+        - key: lab.dev/tier
+          operator: In
+          values: [infra, app]
+  parameters:
+    requests: [cpu, memory]
+    limits: [cpu, memory]

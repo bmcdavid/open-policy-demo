@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Core.Hosting;
+using Microsoft.Azure.Cosmos;
+using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using Xunit;
 
@@ -41,6 +43,19 @@ public sealed partial class ServiceDefaultsTests
         act.Should().NotThrow();
     }
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("http://localhost:4317", true)]
+    public void TracesAreExportedOnlyWhenAnOtlpEndpointIsConfigured(string? otlpEndpoint, bool exported)
+    {
+        var builder = Builder(otlpEndpoint);
+        builder.AddServiceDefaults();
+
+        using var host = builder.Build();
+
+        (host.Services.GetService<TracerProvider>() is not null).Should().Be(exported);
+    }
+
     [Fact]
     public void AddServiceDefaultsReturnsTheBuilderForChaining()
     {
@@ -48,6 +63,29 @@ public sealed partial class ServiceDefaultsTests
 
         builder.AddServiceDefaults().Should().BeSameAs(builder);
     }
+
+    private const string EmulatorConnectionString =
+        "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+
+    private static string ResolvedCosmosDatabase(string? configured)
+    {
+        var builder = Builder();
+        builder.Configuration["ConnectionStrings:cosmos"] = EmulatorConnectionString;
+        if (configured is not null)
+        {
+            builder.Configuration["Cosmos:Database"] = configured;
+        }
+
+        builder.AddCosmosClient();
+        using var host = builder.Build();
+        return host.Services.GetRequiredService<Database>().Id;
+    }
+
+    [Fact]
+    public void CosmosDatabaseDefaultsToPolicyDemo() => ResolvedCosmosDatabase(null).Should().Be("policy-demo");
+
+    [Fact]
+    public void CosmosDatabaseFollowsConfiguration() => ResolvedCosmosDatabase("policy-demo-dev").Should().Be("policy-demo-dev");
 
     [Fact]
     public void ValkeyClientUsesShortTimeoutsSoAnOutageDoesNotSlowRequests()

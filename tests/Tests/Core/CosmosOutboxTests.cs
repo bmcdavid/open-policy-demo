@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using AwesomeAssertions;
 using Core.Features.Cosmos;
 using Core.Features.Events;
+using Tests.Support;
 using Xunit;
 
 namespace Tests.CoreFeatures;
@@ -23,6 +25,7 @@ public sealed class CosmosOutboxTests
           "eventType": "{{e.EventType}}",
           "occurredAt": "{{e.OccurredAt:O}}",
           "traceId": {{(e.TraceId is null ? "null" : $"\"{e.TraceId}\"")}},
+          "traceParent": {{(e.TraceParent is null ? "null" : $"\"{e.TraceParent}\"")}},
           "payload": {{e.Payload.GetRawText()}},
           "ttl": 604800,
           "_etag": "\"0000\"",
@@ -125,5 +128,34 @@ public sealed class CosmosOutboxTests
         stored.GetProperty("tenant").GetString().Should().Be(original.Tenant);
         stored.GetProperty("eventType").GetString().Should().Be(original.EventType);
         stored.GetProperty("ttl").GetInt32().Should().BeGreaterThan(0);
+        stored.GetProperty("traceParent").ValueKind.Should().Be(original.TraceParent is null ? JsonValueKind.Null : JsonValueKind.String);
+    }
+
+    [Fact]
+    public async Task RelayPublishesInsideASpanThatContinuesTheTraceTheEventWasWrittenIn()
+    {
+        using var recorder = new ActivityRecorder();
+        using var requests = new ActivitySource(ActivityRecorder.ParentSourceName);
+        OutboxEvent outbox;
+        ActivityContext request;
+        using (var incoming = requests.StartActivity("request")!)
+        {
+            outbox = Changed();
+            request = incoming.Context;
+        }
+
+        Activity? during = null;
+        await CosmosOutbox.RelayAsync([OutboxFeedItem(outbox)], (_, _) =>
+        {
+            during = Activity.Current;
+            return Task.CompletedTask;
+        }, Ct);
+
+        during.Should().NotBeNull();
+        during!.Source.Name.Should().Be(EventTracing.SourceName);
+        during.DisplayName.Should().Be("relay document.changed");
+        during.Kind.Should().Be(ActivityKind.Producer);
+        during.TraceId.Should().Be(request.TraceId);
+        during.ParentSpanId.Should().Be(request.SpanId);
     }
 }

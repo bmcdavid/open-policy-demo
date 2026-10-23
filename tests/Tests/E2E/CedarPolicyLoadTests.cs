@@ -1,13 +1,14 @@
 ﻿using System.IO;
 using System.Net.Http.Json;
 using System.Text.Json;
-using AppHost.Cedar;
+using CedarPolicyTool;
 using AwesomeAssertions;
 using Xunit;
 
 namespace Tests.E2E;
 
 /// <summary>Catches invalid Cedar that the AppHost's splitter accepts, such as a bad expression inside <c>when</c>.</summary>
+[Trait("Target", "aspire-only")]
 [Collection(AppHostDefinition.Name)]
 public sealed class CedarPolicyLoadTests(AppHostFixture fixture)
 {

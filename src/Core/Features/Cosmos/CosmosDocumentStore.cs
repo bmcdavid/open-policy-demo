@@ -9,11 +9,11 @@ namespace Core.Features.Cosmos;
 /// Cosmos-backed store. Every write goes in one transactional batch with its <c>DocumentChanged</c> outbox item, so
 /// the document and its event are committed together or not at all.
 /// </summary>
-public sealed class CosmosDocumentStore(CosmosClient client, TimeProvider? time = null) : IDocumentStore
+public sealed class CosmosDocumentStore(Database database, TimeProvider? time = null) : IDocumentStore
 {
     private const int MaxConflictRetries = 3;
 
-    private readonly Container _documents = client.GetContainer(CosmosNames.Database, CosmosNames.Documents);
+    private readonly Container _documents = database.GetContainer(CosmosNames.Documents);
 
     public async Task<IReadOnlyList<Document>> ListAsync(string tenant, CancellationToken cancellationToken)
     {

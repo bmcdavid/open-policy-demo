@@ -1,0 +1,107 @@
+# The Api pod: OPA and Cedar run as native sidecars next to the api container (one pod = one ECS task).
+# Containers in a pod share a network namespace, so the api reaches them on localhost, and they bind to 127.0.0.1 so
+# nothing outside the pod can. Image tags here are placeholders; every overlay sets the real ones.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app.kubernetes.io/name: api
+    owner: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api
+        owner: lab
+    spec:
+      serviceAccountName: api
+      # Native sidecars: init containers with restartPolicy Always. They start in order before the main container,
+      # keep running beside it, and stop after it. The pod is Ready only when they are Ready too.
+      initContainers:
+        - name: opa
+          image: localhost:5001/opa:1.21.4
+          restartPolicy: Always
+          args:
+            - run
+            - --server
+            - --addr=127.0.0.1:8181
+            # Probes come from the kubelet via the pod IP, not localhost; this read-only port serves only /health and
+            # /metrics, so the decision API stays private to the pod.
+            - --diagnostic-addr=0.0.0.0:8282
+            - --config-file=/config/opa-config.yaml
+          ports:
+            - name: opa-diag
+              containerPort: 8282
+          volumeMounts:
+            - name: opa-config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          # Ready only once the policy bundle is downloaded and activated.
+          readinessProbe:
+            httpGet: { path: "/health?bundles", port: opa-diag }
+            periodSeconds: 5
+        - name: cedar
+          image: localhost:5001/cedar-policies:unset
+          restartPolicy: Always
+          env:
+            - name: CEDAR_AGENT_ADDR
+              value: 127.0.0.1
+            - name: CEDAR_AGENT_PORT
+              value: "8180"
+            - name: CEDAR_AGENT_POLICIES
+              value: /config/policies.json
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+            limits: { cpu: 500m, memory: 128Mi }
+          # cedar-agent has no separate health port and listens on loopback, so probe from inside the container.
+          readinessProbe:
+            exec:
+              command: [bash, -c, "</dev/tcp/127.0.0.1/8180"]
+            periodSeconds: 5
+      containers:
+        - name: api
+          image: localhost:5001/api:unset
+          ports:
+            - name: http
+              containerPort: 8080
+          # Per-env settings (overlay ConfigMap) and connection strings (overlay SOPS Secret) become env vars.
+          envFrom:
+            - configMapRef:
+                name: app-settings
+            - secretRef:
+                name: connections
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: Opa__BaseAddress
+              value: http://localhost:8181
+            - name: Cedar__BaseAddress
+              value: http://localhost:8180
+            - name: Auth__Authority
+              value: http://keycloak.localtest.me/realms/opa-demo
+            - name: Auth__Audience
+              value: demo-api
+            - name: Auth__RequireHttpsMetadata
+              value: "false"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://aspire-dashboard.infra:18889
+            - name: OTEL_SERVICE_NAME
+              value: api
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          readinessProbe:
+            httpGet: { path: /buildinfo, port: http }
+            periodSeconds: 5
+      volumes:
+        - name: opa-config
+          configMap:
+            name: opa-config

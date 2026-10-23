@@ -22,7 +22,7 @@ internal static class ConfigureServicesAndEndpoints
             {
                 o.Authority = authority;
                 o.MapInboundClaims = false;
-                o.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                o.RequireHttpsMetadata = builder.Configuration.GetValue<bool?>("Auth:RequireHttpsMetadata") ?? !builder.Environment.IsDevelopment();
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidIssuer = authority,
@@ -55,6 +55,8 @@ internal static class ConfigureServicesAndEndpoints
             builder.Services.AddTransient(sp => OpaPolicy.Decide(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(OpaPolicy))));
         }
 
+        // Built here, not lazily, so invalid Deployment:* configuration fails at startup rather than on the first request.
+        builder.Services.AddSingleton(DeploymentEnvironment.FromConfiguration(builder.Configuration));
         builder.Services.AddTransient<DocumentAccess>();
         return builder;
     }

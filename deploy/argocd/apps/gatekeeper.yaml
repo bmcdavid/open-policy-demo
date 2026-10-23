@@ -1,0 +1,40 @@
+# OPA Gatekeeper: an admission webhook. Before the API server stores an object it asks Gatekeeper, which runs the
+# installed policies and can deny the request. (The OPA sidecars answer a different question: may this user make this
+# API call.) The chart installs the CRDs for templates, constraints and expansion.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gatekeeper
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+spec:
+  project: default
+  source:
+    repoURL: https://open-policy-agent.github.io/gatekeeper/charts
+    chart: gatekeeper
+    targetRevision: 3.23.1
+    helm:
+      releaseName: gatekeeper
+      valuesObject:
+        replicas: 1
+        # Evaluate the Pod a Deployment/StatefulSet would create when the workload itself is submitted.
+        enableGeneratorResourceExpansion: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gatekeeper-system
+  # Gatekeeper's certificate rotator writes the webhooks' caBundle; without this, self-heal would keep erasing it.
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions: [".webhooks[]?.clientConfig.caBundle"]
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions: [".webhooks[]?.clientConfig.caBundle"]
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true

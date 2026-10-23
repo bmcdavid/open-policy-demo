@@ -1,0 +1,43 @@
+# prod: accepts only prod, defaults to prod, decides with OPA, keeps two api pods. Synced by hand in Argo.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: app-prod
+resources:
+  - ../../base
+# Image tags are the deploy contract: deploy/build/promote.sh copies these (and the bundle tag in opa-config.yaml)
+# from the previous environment.
+images:
+  - name: localhost:5001/api
+    newTag: 6560be9
+  - name: localhost:5001/worker
+    newTag: 6560be9
+  - name: localhost:5001/cedar-policies
+    newTag: 6560be9
+configMapGenerator:
+  - name: opa-config
+    files:
+      - opa-config.yaml
+  - name: app-settings
+    literals:
+      - POLICY_ENGINE=opa
+      - Deployment__AllowedEnvironments__0=prod
+      - Deployment__DefaultEnvironment=prod
+      - Cosmos__Database=policy-demo-prod
+generators:
+  - secrets/secret-generator.yaml
+patches:
+  - target:
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.prod.localtest.me
+  # Gatekeeper requires at least two api pods in app-prod.
+  - target:
+      kind: Deployment
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2

@@ -8,14 +8,12 @@ using Microsoft.Extensions.Logging;
 namespace Worker.Features.Relay;
 
 /// <summary>Reads the Cosmos change feed of the documents container and relays outbox items to RabbitMQ, at least once.</summary>
-internal sealed partial class OutboxRelayService(CosmosClient client, PublishEvent publish, ILogger<OutboxRelayService> logger) : IHostedService
+internal sealed partial class OutboxRelayService(Database database, PublishEvent publish, ILogger<OutboxRelayService> logger) : IHostedService
 {
     private ChangeFeedProcessor? _processor;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var database = client.GetDatabase(CosmosNames.Database);
-
         _processor = database.GetContainer(CosmosNames.Documents)
             .GetChangeFeedProcessorBuilder<JsonElement>("outbox-relay", (changes, token) => CosmosOutbox.RelayAsync(changes, WithLogging(publish), token))
             .WithInstanceName($"{Environment.MachineName}-{Environment.ProcessId}")

@@ -1,0 +1,35 @@
+# CoreDNS is the cluster's DNS server: pods resolve Service names like valkey.infra through it.
+# This is kind's default Corefile plus one rewrite, so pods resolve keycloak.localtest.me to the Envoy
+# Gateway Service (the laptop resolves it to 127.0.0.1). Both sides then see the same token issuer URL.
+# Applied by cluster.sh, not Argo: Argo cannot cleanly adopt this kube-system ConfigMap.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        rewrite name keycloak.localtest.me envoy-lab.envoy-gateway-system.svc.cluster.local
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
+        cache 30 {
+           disable success cluster.local
+           disable denial cluster.local
+        }
+        loop
+        reload
+        loadbalance
+    }

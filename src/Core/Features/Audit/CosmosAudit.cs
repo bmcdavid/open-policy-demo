@@ -8,10 +8,10 @@ namespace Core.Features.Audit;
 
 public static class CosmosAudit
 {
-    public static UpsertAuditEntry Upsert(CosmosClient client)
+    public static UpsertAuditEntry Upsert(Database database)
     {
-        ArgumentNullException.ThrowIfNull(client);
-        var container = client.GetContainer(CosmosNames.Database, CosmosNames.Audit);
+        ArgumentNullException.ThrowIfNull(database);
+        var container = database.GetContainer(CosmosNames.Audit);
 
         return async (entry, cancellationToken) =>
         {
@@ -26,10 +26,10 @@ public static class CosmosAudit
         };
     }
 
-    public static QueryAudit Query(CosmosClient client)
+    public static QueryAudit Query(Database database)
     {
-        ArgumentNullException.ThrowIfNull(client);
-        var container = client.GetContainer(CosmosNames.Database, CosmosNames.Audit);
+        ArgumentNullException.ThrowIfNull(database);
+        var container = database.GetContainer(CosmosNames.Audit);
 
         return async (query, cancellationToken) =>
         {

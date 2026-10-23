@@ -11,6 +11,7 @@
     <PackageReference Include="Aspire.Hosting.RabbitMQ" />
     <PackageReference Include="Aspire.Hosting.Valkey" />
     <ProjectReference Include="..\Api\Api.csproj" />
+    <ProjectReference Include="..\CedarPolicyTool\CedarPolicyTool.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Core\Core.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Worker\Worker.csproj" />
   </ItemGroup>

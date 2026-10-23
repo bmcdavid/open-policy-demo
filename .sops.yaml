@@ -1,0 +1,6 @@
+# SOPS encrypts only the values under data/stringData, so keys and metadata stay readable in diffs.
+# The private key stays on the laptop (~/.config/sops/age/keys.txt); bootstrap copies it into the cluster.
+creation_rules:
+  - path_regex: deploy/.*/secrets/.*\.sops\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age17fgee0ghq34yxxtxaauedhfqg4209q5u8yqq8n586d4u2jfzyy9sxxsnwg

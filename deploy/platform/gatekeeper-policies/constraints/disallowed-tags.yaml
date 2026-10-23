@@ -1,0 +1,18 @@
+# No :latest and no untagged images: a tag must name exactly one build.
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sDisallowedTags
+metadata:
+  name: no-latest-or-untagged
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: [Pod]
+    namespaceSelector:
+      matchExpressions:
+        - key: lab.dev/tier
+          operator: In
+          values: [infra, app]
+  parameters:
+    tags: [latest]

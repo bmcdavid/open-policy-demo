@@ -1,0 +1,17 @@
+# The library constraints read a Pod spec. Without expansion, a bad Deployment would be accepted and only its pods
+# rejected later, out of sight of Argo. Expansion makes Gatekeeper evaluate the Pod a Deployment or StatefulSet would
+# create, at the moment the workload itself is submitted, so the sync fails with the constraint message.
+apiVersion: expansion.gatekeeper.sh/v1beta1
+kind: ExpansionTemplate
+metadata:
+  name: expand-workloads
+spec:
+  applyTo:
+    - groups: [apps]
+      kinds: [Deployment, StatefulSet]
+      versions: [v1]
+  templateSource: spec.template
+  generatedGVK:
+    kind: Pod
+    group: ""
+    version: v1

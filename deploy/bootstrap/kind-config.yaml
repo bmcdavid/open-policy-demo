@@ -1,0 +1,27 @@
+# kind runs each Kubernetes "node" (machine) as a Docker container.
+# One control plane (API server, scheduler, etcd) and two workers (where pods run).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: lab
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+    # A NodePort Service listens on the same port on every node. Envoy's Service uses 30080/30443;
+    # these mappings publish them on the laptop as 80/443, so http://*.localtest.me reaches the Gateway.
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 80
+        listenAddress: 127.0.0.1
+      - containerPort: 30443
+        hostPort: 443
+        listenAddress: 127.0.0.1
+  - role: worker
+    image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+  - role: worker
+    image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+# containerd (the runtime that pulls images on each node) reads per-registry mirror files from this
+# directory; registry.sh writes one for localhost:5001. containerd 2 names the plugin cri.v1.images.
+containerdConfigPatches:
+  - |-
+    [plugins."io.containerd.cri.v1.images".registry]
+      config_path = "/etc/containerd/certs.d"

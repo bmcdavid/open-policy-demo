@@ -39,12 +39,12 @@ internal static class ConfigureServicesAndEndpoints
     {
         builder.AddCosmosClient();
         builder.Services.AddHostedService<CosmosInitializerService>();
-        builder.Services.AddSingleton<WriteOutboxEvent>(sp => CosmosOutbox.Write(sp.GetRequiredService<CosmosClient>()));
-        builder.Services.AddSingleton<QueryAudit>(sp => CosmosAudit.Query(sp.GetRequiredService<CosmosClient>()));
+        builder.Services.AddSingleton<WriteOutboxEvent>(sp => CosmosOutbox.Write(sp.GetRequiredService<Database>()));
+        builder.Services.AddSingleton<QueryAudit>(sp => CosmosAudit.Query(sp.GetRequiredService<Database>()));
 
         if (builder.Configuration.GetConnectionString(ConnectionNames.Valkey) is null)
         {
-            builder.Services.AddSingleton<IDocumentStore>(sp => new CosmosDocumentStore(sp.GetRequiredService<CosmosClient>()));
+            builder.Services.AddSingleton<IDocumentStore>(sp => new CosmosDocumentStore(sp.GetRequiredService<Database>()));
             return;
         }
 
@@ -52,7 +52,7 @@ internal static class ConfigureServicesAndEndpoints
         builder.Services.AddSingleton<ICacheBackend>(sp => new ValkeyCacheBackend(sp.GetRequiredService<IConnectionMultiplexer>()));
         builder.Services.AddSingleton<DocumentCache>();
         builder.Services.AddSingleton<IDocumentStore>(sp =>
-            sp.GetRequiredService<DocumentCache>().Wrap(new CosmosDocumentStore(sp.GetRequiredService<CosmosClient>())));
+            sp.GetRequiredService<DocumentCache>().Wrap(new CosmosDocumentStore(sp.GetRequiredService<Database>())));
     }
 
     public static void MapDocumentEndpoints(this WebApplication app)

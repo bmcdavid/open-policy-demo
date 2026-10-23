@@ -1,0 +1,9 @@
+# Which rule applies where is decided by the namespace label lab.dev/tier (platform namespaces are not constrained).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - required-resources.yaml
+  - disallowed-tags.yaml
+  - allowed-repos.yaml
+  - required-labels.yaml
+  - prod-api-replicas.yaml

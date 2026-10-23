@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Core.Features.Cosmos;
 
 /// <summary>Creates the database, containers and seed data at startup. Retries because the emulator can accept connections before it is ready.</summary>
-public sealed partial class CosmosInitializerService(CosmosClient client, ILogger<CosmosInitializerService> logger) : IHostedService
+public sealed partial class CosmosInitializerService(Database database, ILogger<CosmosInitializerService> logger) : IHostedService
 {
     private const int MaxAttempts = 20;
     private static readonly TimeSpan Delay = TimeSpan.FromSeconds(3);
@@ -16,7 +16,7 @@ public sealed partial class CosmosInitializerService(CosmosClient client, ILogge
         {
             try
             {
-                await CosmosSetup.EnsureCreatedAsync(client, cancellationToken);
+                await CosmosSetup.EnsureCreatedAsync(database, cancellationToken);
                 return;
             }
             catch (Exception ex) when (attempt < MaxAttempts && ex is CosmosException or HttpRequestException)

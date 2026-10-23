@@ -12,6 +12,12 @@ dotnet run --project src/AppHost
 
 The Aspire dashboard lists every endpoint. Use the Keycloak `oidc` and Api `http` URLs in `requests.http`.
 
+## Run on Kubernetes
+
+The same app on a local kind cluster, deployed by Argo CD from Git, with Gatekeeper guardrails and dev/staging/prod
+environments. Setup, bootstrap and the promotion flow are in [`deploy/README.md`](deploy/README.md). Never run it
+alongside Aspire.
+
 ## What starts
 
 | Resource | Image | Role |
@@ -68,7 +74,7 @@ Send `X-Environment: dev|staging|prod` on every `/documents` and `/audit` call (
 |---|---|
 | reader: list, read. editor: + create, update. admin: + delete, audit | `role does not permit action` |
 | Tenant must match the document's tenant, except `platform-admin` | `cross-tenant access denied` |
-| In `prod`, create/update need admin | `writes in prod require admin` |
+| In `prod`, create/update need admin | `writes in prod require the admin role` |
 | In `prod`, delete needs platform-admin | `deletes in prod are restricted to platform-admin` |
 | Environment must be dev, staging or prod | `unknown environment` |
 
@@ -108,6 +114,13 @@ dotnet test --project tests/Tests
 ```
 
 `Tests.E2E` starts the whole stack through Aspire (needs Docker). `ScenarioMatrixTests` queries OPA for every user x tenant x environment x action and prints an allow/deny table with reasons in the test output.
+
+Against the Kubernetes dev environment instead (no Aspire; tests that need the sidecars or the broker directly are skipped):
+
+```bash
+E2E_TARGET=k8s E2E_API_URL=http://api.dev.localtest.me E2E_KEYCLOAK_URL=http://keycloak.localtest.me \
+  dotnet test --project tests/Tests --filter-namespace "Tests.E2E" --filter-not-trait "Target=aspire-only"
+```
 
 ## Notes
 

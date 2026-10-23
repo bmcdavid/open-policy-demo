@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AppHost.Cedar;
+namespace CedarPolicyTool;
 
 internal static class CedarPolicySplitter
 {

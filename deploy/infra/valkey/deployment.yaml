@@ -1,0 +1,34 @@
+# Valkey is only a cache here, so no persistence: a Deployment (not a StatefulSet) and no volume.
+# Environments share the server but use separate DB indexes (dev 0, staging 1, prod 2).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  labels:
+    app.kubernetes.io/name: valkey
+    owner: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: valkey
+        owner: lab
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:9.1.2
+          args: [--save, "", --appendonly, "no"]
+          ports:
+            - name: valkey
+              containerPort: 6379
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          readinessProbe:
+            exec:
+              command: [valkey-cli, ping]
+            periodSeconds: 5
