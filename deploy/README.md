@@ -94,7 +94,10 @@ runs exactly the artifacts that were tested in staging.
 2. `deploy/build/promote.sh dev staging`, review the diff (tag lines only), commit, push. staging rolls automatically;
    it runs Cedar, so the change shows in its 403 reasons.
 3. `deploy/build/promote.sh staging prod`, commit, push. `api-prod` turns **OutOfSync** in the Argo UI, showing the
-   tag diff, and keeps serving the old version. Press **Sync** on `api-prod`; it rolls one pod at a time.
+   tag diff, and keeps serving the old version. Press **Sync** on `api-prod`, tick **Prune**, then **Synchronize**; it
+   rolls one pod at a time. Prune matters because a changed ConfigMap gets a new hashed name and the old one leaves Git;
+   dev and staging prune automatically, but a manual sync only prunes when asked, and otherwise the old
+   `opa-config-<hash>` stays behind and keeps prod OutOfSync ("requires pruning").
 
 Check any environment:
 
