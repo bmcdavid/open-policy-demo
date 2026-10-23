@@ -8,11 +8,11 @@ resources:
 # from the previous environment.
 images:
   - name: localhost:5001/api
-    newTag: 01ae60d
+    newTag: 201e84c
   - name: localhost:5001/worker
-    newTag: 01ae60d
+    newTag: 201e84c
   - name: localhost:5001/cedar-policies
-    newTag: 05cc27c
+    newTag: 201e84c
 configMapGenerator:
   - name: opa-config
     files:
