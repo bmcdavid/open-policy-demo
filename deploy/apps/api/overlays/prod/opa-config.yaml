@@ -1,0 +1,16 @@
+# OPA pulls its policy bundle as an OCI artifact. Pods reach the registry by its name on the kind Docker network
+# (localhost:5001 works only for image pulls, through the containerd mirror). Shape verified in Task 12.
+services:
+  registry:
+    url: http://kind-registry:5000
+    type: oci
+bundles:
+  authz:
+    service: registry
+    resource: kind-registry:5000/opa-bundle:2a95bd8
+    persist: false
+    polling:
+      min_delay_seconds: 30
+      max_delay_seconds: 60
+decision_logs:
+  console: true

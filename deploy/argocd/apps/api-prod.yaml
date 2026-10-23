@@ -1,0 +1,18 @@
+# No automated sync: Argo shows prod OutOfSync when Git changes (a promotion commit) and waits for a person to press
+# Sync. A hand edit in the cluster is reported, not reverted.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: api-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bmcdavid/open-policy-demo.git
+    targetRevision: k8s
+    path: deploy/apps/api/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-prod

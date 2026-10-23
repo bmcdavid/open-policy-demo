@@ -1,0 +1,35 @@
+# staging: accepts staging and prod headers, defaults to staging, decides with Cedar.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: app-staging
+resources:
+  - ../../base
+# Image tags are the deploy contract: deploy/build/promote.sh copies these (and the bundle tag in opa-config.yaml)
+# from the previous environment.
+images:
+  - name: localhost:5001/api
+    newTag: 01ae60d
+  - name: localhost:5001/worker
+    newTag: 01ae60d
+  - name: localhost:5001/cedar-policies
+    newTag: 2a95bd8
+configMapGenerator:
+  - name: opa-config
+    files:
+      - opa-config.yaml
+  - name: app-settings
+    literals:
+      - POLICY_ENGINE=cedar
+      - Deployment__AllowedEnvironments__0=staging prod
+      - Deployment__DefaultEnvironment=staging
+      - Cosmos__Database=policy-demo-staging
+generators:
+  - secrets/secret-generator.yaml
+patches:
+  - target:
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.staging.localtest.me
