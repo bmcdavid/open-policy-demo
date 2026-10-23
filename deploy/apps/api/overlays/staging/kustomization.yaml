@@ -20,7 +20,8 @@ configMapGenerator:
   - name: app-settings
     literals:
       - POLICY_ENGINE=cedar
-      - Deployment__AllowedEnvironments__0=staging prod
+      - Deployment__AllowedEnvironments__0=staging
+      - Deployment__AllowedEnvironments__1=prod
       - Deployment__DefaultEnvironment=staging
       - Cosmos__Database=policy-demo-staging
 generators:
