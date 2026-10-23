@@ -55,6 +55,8 @@ internal static class ConfigureServicesAndEndpoints
             builder.Services.AddTransient(sp => OpaPolicy.Decide(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(OpaPolicy))));
         }
 
+        // Built here, not lazily, so invalid Deployment:* configuration fails at startup rather than on the first request.
+        builder.Services.AddSingleton(DeploymentEnvironment.FromConfiguration(builder.Configuration));
         builder.Services.AddTransient<DocumentAccess>();
         return builder;
     }

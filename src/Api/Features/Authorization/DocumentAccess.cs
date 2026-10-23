@@ -7,13 +7,14 @@ namespace Api.Features.Authorization;
 internal sealed record DenyBody(IReadOnlyList<string> Reasons);
 
 /// <summary>
-/// "Load, authorize, then act" for every protected endpoint. Owns the ordering rules: a missing or invalid
-/// <c>X-Environment</c> header is 400 before anything else; a missing document is 404 without
+/// "Load, authorize, then act" for every protected endpoint. Owns the ordering rules: an <c>X-Environment</c> header
+/// that does not resolve for this deployment (missing without a default, unknown, or not allowed) is 400 before anything else; a missing document is 404 without
 /// calling policy; the policy decision is recorded as an outbox event before the action runs (so a decision that cannot
 /// be recorded fails closed with 503); a denial is 403 with reasons; an unreachable engine is 503. The action only runs
 /// when the request is allowed.
 /// </summary>
-internal sealed class DocumentAccess(IDocumentStore store, DecidePolicy decidePolicy, WriteOutboxEvent writeOutbox)
+internal sealed class DocumentAccess(
+    IDocumentStore store, DecidePolicy decidePolicy, WriteOutboxEvent writeOutbox, ResolveEnvironment resolveEnvironment)
 {
     /// <summary>For operations on one document: get, update and delete.</summary>
     public async Task<IResult> Existing(
@@ -22,9 +23,10 @@ internal sealed class DocumentAccess(IDocumentStore store, DecidePolicy decidePo
         ArgumentNullException.ThrowIfNull(http);
         ArgumentNullException.ThrowIfNull(act);
 
-        if (!DemoEnvironments.TryParse(http.Request.Headers[DemoEnvironments.HeaderName].ToString(), out var environment))
+        var resolution = resolveEnvironment(http.Request.Headers[DemoEnvironments.HeaderName].ToString());
+        if (resolution.Environment is not { } environment)
         {
-            return InvalidEnvironment;
+            return Results.BadRequest(new { error = resolution.Error });
         }
 
         var document = await store.FindAsync(id, cancellationToken);
@@ -45,18 +47,16 @@ internal sealed class DocumentAccess(IDocumentStore store, DecidePolicy decidePo
         ArgumentNullException.ThrowIfNull(http);
         ArgumentNullException.ThrowIfNull(act);
 
-        if (!DemoEnvironments.TryParse(http.Request.Headers[DemoEnvironments.HeaderName].ToString(), out var environment))
+        var resolution = resolveEnvironment(http.Request.Headers[DemoEnvironments.HeaderName].ToString());
+        if (resolution.Environment is not { } environment)
         {
-            return InvalidEnvironment;
+            return Results.BadRequest(new { error = resolution.Error });
         }
 
         var effectiveTenant = tenant ?? CurrentSubject.From(http.User).Tenant;
         var denied = await EnforceAsync(http, environment, action, new PolicyResource(resourceType, effectiveTenant, null), cancellationToken);
         return denied ?? await act(effectiveTenant);
     }
-
-    private static IResult InvalidEnvironment =>
-        Results.BadRequest(new { error = DemoEnvironments.HeaderName + " must be one of dev, staging, prod" });
 
     private async Task<IResult?> EnforceAsync(
         HttpContext http, string environment, string action, PolicyResource resource, CancellationToken cancellationToken)

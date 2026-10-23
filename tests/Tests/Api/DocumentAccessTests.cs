@@ -26,6 +26,8 @@ public sealed class DocumentAccessTests
 
         public Exception? OutboxThrows { get; set; }
 
+        public ResolveEnvironment Environment { get; set; } = DeploymentEnvironment.Create(null, null);
+
         public DocumentAccess Access => new(Store, Policy.DecideAsync, (e, _) =>
         {
             if (OutboxThrows is not null)
@@ -35,7 +37,7 @@ public sealed class DocumentAccessTests
 
             Events.Add(e);
             return Task.CompletedTask;
-        });
+        }, Environment);
     }
 
     private static DefaultHttpContext Context()
@@ -106,6 +108,21 @@ public sealed class DocumentAccessTests
         context.Request.Headers.Remove(DemoEnvironments.HeaderName);
 
         var existing = await f.Access.Existing(context, Guid.NewGuid(), PolicyActions.Read, Allowed, Ct);
+        var inTenant = await f.Access.InTenant(context, "document", PolicyActions.List, null, AllowedTenant, Ct);
+
+        existing.Should().BeAssignableTo<IStatusCodeHttpResult>().Which.StatusCode.Should().Be(400);
+        inTenant.Should().BeAssignableTo<IStatusCodeHttpResult>().Which.StatusCode.Should().Be(400);
+        f.Policy.Inputs.Should().BeEmpty();
+        f.Events.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task EnvironmentOutsideTheAllowlistIs400BeforeTheDocumentIsLoadedOrPolicyIsAsked()
+    {
+        var f = new Fixture { Environment = DeploymentEnvironment.Create(["prod"], "prod") };
+        var context = Context();
+
+        var existing = await f.Access.Existing(context, DocumentSeed.Documents[0].Id, PolicyActions.Read, Allowed, Ct);
         var inTenant = await f.Access.InTenant(context, "document", PolicyActions.List, null, AllowedTenant, Ct);
 
         existing.Should().BeAssignableTo<IStatusCodeHttpResult>().Which.StatusCode.Should().Be(400);
