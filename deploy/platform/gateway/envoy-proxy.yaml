@@ -1,0 +1,22 @@
+# How Envoy Gateway runs the proxy for GatewayClass "lab". A Service is a stable name and virtual IP in front of a
+# set of pods; fixing its name lets the CoreDNS rewrite (envoy-lab.envoy-gateway-system) find it. NodePort 30080 is
+# what kind publishes on the laptop as port 80. (30443 is mapped too, reserved for a future HTTPS listener.)
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: lab
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        name: envoy-lab
+        type: NodePort
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              ports:
+                - port: 80
+                  nodePort: 30080

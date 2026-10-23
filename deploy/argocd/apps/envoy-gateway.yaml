@@ -1,0 +1,27 @@
+# Envoy Gateway: a controller that implements the Gateway API by running Envoy proxies.
+# The chart also installs the Gateway API CRDs (Custom Resource Definitions: new object kinds such as Gateway and
+# HTTPRoute). ServerSideApply avoids the size limit of client-side apply's last-applied annotation on large CRDs.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-gateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+spec:
+  project: default
+  source:
+    repoURL: docker.io/envoyproxy
+    chart: gateway-helm
+    targetRevision: v1.9.2
+    helm:
+      releaseName: envoy-gateway
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: envoy-gateway-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

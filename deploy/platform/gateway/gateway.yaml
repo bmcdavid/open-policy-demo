@@ -1,0 +1,22 @@
+# The shared entry point (like an ALB listener). HTTPRoutes in infra and app-* namespaces attach to it with
+# parentRefs: [{name: lab, namespace: envoy-gateway-system}] and pick hosts under *.localtest.me.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: lab
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: lab
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.localtest.me"
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchExpressions:
+              - key: lab.dev/tier
+                operator: In
+                values: [infra, app]
