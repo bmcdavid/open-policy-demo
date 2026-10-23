@@ -74,7 +74,7 @@ Send `X-Environment: dev|staging|prod` on every `/documents` and `/audit` call (
 |---|---|
 | reader: list, read. editor: + create, update. admin: + delete, audit | `role does not permit action` |
 | Tenant must match the document's tenant, except `platform-admin` | `cross-tenant access denied` |
-| In `prod`, create/update need admin | `writes in prod require admin` |
+| In `prod`, create/update need admin | `writes in prod require the admin role` |
 | In `prod`, delete needs platform-admin | `deletes in prod are restricted to platform-admin` |
 | Environment must be dev, staging or prod | `unknown environment` |
 

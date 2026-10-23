@@ -77,7 +77,7 @@ public sealed class DocumentsE2ETests(AppHostFixture fixture)
         using var response = await SendAsync("editor-acme", HttpMethod.Put, "/documents/" + document.Id, "prod", new { title = "x" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        (await ReasonsAsync(response)).Should().Contain("writes in prod require admin");
+        (await ReasonsAsync(response)).Should().Contain("writes in prod require the admin role");
     }
 
     [Fact]

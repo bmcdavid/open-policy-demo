@@ -63,7 +63,7 @@ Content-Type: application/json
 
 { "title": "from requests.http" }
 
-### editor-acme creates in prod: 403 writes in prod require admin
+### editor-acme creates in prod: 403 writes in prod require the admin role
 POST {{api}}/documents
 Authorization: Bearer {{editorAcme.response.body.$.access_token}}
 X-Environment: prod

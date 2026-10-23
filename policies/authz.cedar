@@ -70,7 +70,7 @@ when {
 };
 
 // 6. Prod writes require admin
-@id("writes in prod require admin")
+@id("writes in prod require the admin role")
 forbid (
     principal,
     action in [Action::"create", Action::"update"],
