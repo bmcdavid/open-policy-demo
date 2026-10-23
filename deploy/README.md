@@ -63,10 +63,11 @@ The committed secrets are encrypted to the original author's key, so nobody else
 ```bash
 deploy/bootstrap/use-fork.sh https://github.com/<you>/open-policy-demo.git   # every Application now reads your fork
 deploy/bootstrap/new-secrets.sh   # age key (if none), .sops.yaml, fresh passwords, every deploy/**/secrets/*.sops.yaml
-git add -A deploy .sops.yaml && git commit -m "lab: my fork and secrets"
+git add .sops.yaml deploy/argocd ':(glob)deploy/**/secrets/*.sops.yaml' && git commit -m "lab: my fork and secrets"
 ```
 
 **Back up `~/.config/sops/age/keys.txt`.** Without it nobody can decrypt your secrets; with it, anyone can.
+Stage only these paths: the fork is public, so a stray decrypted file (`sops -d ... > file`) must never be committed.
 
 ### 2.3 Cluster and local registry
 

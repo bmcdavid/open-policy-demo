@@ -14,11 +14,12 @@ usage() {
   exit 2
 }
 
+# An explicit empty tag (for example "$(build-images.sh | tail -1)" after a failed build) is an error, not "skip".
 envs=() images="" policies=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --images) [ $# -ge 2 ] || usage; images="$2"; shift 2 ;;
-    --policies) [ $# -ge 2 ] || usage; policies="$2"; shift 2 ;;
+    --images) [ $# -ge 2 ] && [ -n "$2" ] || usage; images="$2"; shift 2 ;;
+    --policies) [ $# -ge 2 ] && [ -n "$2" ] || usage; policies="$2"; shift 2 ;;
     -*) usage ;;
     *) envs+=("$1"); shift ;;
   esac
