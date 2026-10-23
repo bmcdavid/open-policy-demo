@@ -122,7 +122,7 @@ containers:
 
 - The sidecars bind to `127.0.0.1`, so only containers in the pod can reach them.
 - Each overlay's `opa-config.yaml` comes from a `configMapGenerator` (hashed name, so a change rolls the pods). It points an OCI service at `http://kind-registry:5000` (the registry's name on the `kind` Docker network; `localhost:5001` only works for image pulls through the containerd mirror) with `resource: opa-bundle:<sha>`.
-- **Check in Phase 4:** confirm OPA's OCI downloader accepts a plain-HTTP registry. Fallback: ship the bundle in an `opa-bundle:<sha>` nginx image served as a third sidecar on `127.0.0.1`.
+- **Checked in Phase 4 (2026-10-23): the OCI path works, no fallback needed.** OPA 1.21.4 on the `kind` network loaded `opa-bundle:<tag>` from `http://kind-registry:5000` (service `type: oci`, bundle `resource: kind-registry:5000/opa-bundle:<tag>`, `persist: false`); `/health?bundles` returned 200 and decisions came from the bundle.
 - All images use explicit tags: `opa`, `cedar-agent` and every infra image. No `:latest` in `deploy/`.
 - The Worker is a separate Deployment, one replica per env, sharing its env's Cosmos database, vhost and Valkey index. No sidecars.
 
