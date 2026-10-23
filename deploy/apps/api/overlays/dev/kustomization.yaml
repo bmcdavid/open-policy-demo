@@ -11,7 +11,7 @@ images:
   - name: localhost:5001/worker
     newTag: 01ae60d
   - name: localhost:5001/cedar-policies
-    newTag: 2a95bd8
+    newTag: 05cc27c
 configMapGenerator:
   - name: opa-config
     files:
