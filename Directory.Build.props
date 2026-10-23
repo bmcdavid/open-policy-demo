@@ -1,0 +1,48 @@
+<Project>
+  <PropertyGroup>
+    <Company>TheStudioC</Company>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <LangVersion>latest</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>All</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Do not edit below this line -->
+    <CurrentTime>$([System.DateTime]::UtcNow.ToString(u))</CurrentTime>
+    <CIBuildNumber>0</CIBuildNumber>
+    <RepositoryBranch>No Branch Set</RepositoryBranch>
+    <RepositoryCommit>No Commit Set</RepositoryCommit>
+    <CIBuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</CIBuildNumber>
+    <RepositoryBranch Condition="'$(GIT_BRANCH)' != ''">$(GIT_BRANCH)</RepositoryBranch>
+    <RepositoryCommit Condition="'$(GIT_HASH)' != ''">$(GIT_HASH)</RepositoryCommit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Api" />
+    <InternalsVisibleTo Include="Worker" />
+    <InternalsVisibleTo Include="Tests" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' AND '$(IsAspireHost)' != 'true' AND '$(SkipBuildInfoAttribute)' != 'true'">
+    <AssemblyAttribute Include="Core.BuildInfoAttribute">
+      <_Parameter1>BuildDateUtc</_Parameter1>
+      <_Parameter2>$(CurrentTime)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Core.BuildInfoAttribute">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(CIBuildNumber)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Core.BuildInfoAttribute">
+      <_Parameter1>GitBranch</_Parameter1>
+      <_Parameter2>$(RepositoryBranch)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Core.BuildInfoAttribute">
+      <_Parameter1>GitHash</_Parameter1>
+      <_Parameter2>$(RepositoryCommit)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

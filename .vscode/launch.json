@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "aspire",
+      "request": "launch",
+      "name": "Aspire: AppHost (OPA)",
+      "program": "${workspaceFolder}/src/AppHost",
+      "launchProfile": "https"
+    },
+    {
+      "type": "aspire",
+      "request": "launch",
+      "name": "Aspire: AppHost (Cedar)",
+      "program": "${workspaceFolder}/src/AppHost",
+      "launchProfile": "https-cedar"
+    }
+  ]
+}

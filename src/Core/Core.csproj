@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Aspire.RabbitMQ.Client" />
+    <PackageReference Include="Aspire.StackExchange.Redis" />
+    <PackageReference Include="protobuf-net" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Sinks.OpenTelemetry" />
+  </ItemGroup>
+</Project>

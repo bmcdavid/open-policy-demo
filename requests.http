@@ -1,0 +1,94 @@
+### Set these from the Aspire dashboard (resource endpoints): keycloak "oidc" and api "http".
+@keycloak = http://localhost:8080
+@api = http://localhost:5080
+@environment = dev
+
+### Tokens (password grant). Password for every demo user: Passw0rd!
+# @name readerAcme
+POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=demo-api&username=reader-acme&password=Passw0rd!
+
+###
+# @name editorAcme
+POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=demo-api&username=editor-acme&password=Passw0rd!
+
+###
+# @name adminAcme
+POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=demo-api&username=admin-acme&password=Passw0rd!
+
+###
+# @name editorGlobex
+POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=demo-api&username=editor-globex&password=Passw0rd!
+
+###
+# @name platformAdmin
+POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=demo-api&username=platform-admin&password=Passw0rd!
+
+### Who am I (claims the policy sees)
+GET {{api}}/whoami
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
+
+### reader-acme lists acme documents in dev: allowed
+GET {{api}}/documents
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
+X-Environment: {{environment}}
+
+### reader-acme lists globex documents: 403 cross-tenant access denied
+GET {{api}}/documents?tenant=globex
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}
+X-Environment: {{environment}}
+
+### editor-acme creates a document in dev: allowed (201)
+POST {{api}}/documents
+Authorization: Bearer {{editorAcme.response.body.$.access_token}}
+X-Environment: dev
+Content-Type: application/json
+
+{ "title": "from requests.http" }
+
+### editor-acme creates in prod: 403 writes in prod require admin
+POST {{api}}/documents
+Authorization: Bearer {{editorAcme.response.body.$.access_token}}
+X-Environment: prod
+Content-Type: application/json
+
+{ "title": "from requests.http" }
+
+### admin-acme creates in prod: allowed
+POST {{api}}/documents
+Authorization: Bearer {{adminAcme.response.body.$.access_token}}
+X-Environment: prod
+Content-Type: application/json
+
+{ "title": "prod document" }
+
+### editor-globex creates a document for acme: 403 cross-tenant access denied
+POST {{api}}/documents
+Authorization: Bearer {{editorGlobex.response.body.$.access_token}}
+X-Environment: dev
+Content-Type: application/json
+
+{ "title": "sneaky", "tenant": "acme" }
+
+### platform-admin lists globex in prod: allowed (crosses tenants)
+GET {{api}}/documents?tenant=globex
+Authorization: Bearer {{platformAdmin.response.body.$.access_token}}
+X-Environment: prod
+
+### Missing X-Environment: 400
+GET {{api}}/documents
+Authorization: Bearer {{readerAcme.response.body.$.access_token}}

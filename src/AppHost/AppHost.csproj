@@ -1,0 +1,21 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.3">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsAspireHost>true</IsAspireHost>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>bc8f7e9d-62e4-4edc-be9d-d82e5add44d6</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" />
+    <PackageReference Include="Aspire.Hosting.Keycloak" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+    <PackageReference Include="Aspire.Hosting.Valkey" />
+    <ProjectReference Include="..\Api\Api.csproj" />
+    <ProjectReference Include="..\Core\Core.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\Worker\Worker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Transitive via Aspire; local demo orchestration only. Remove when Aspire updates MessagePack. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-qhrr-8q5h-9q3h" />
+  </ItemGroup>
+</Project>
