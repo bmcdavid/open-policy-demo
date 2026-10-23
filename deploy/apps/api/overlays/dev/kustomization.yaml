@@ -10,9 +10,6 @@ images:
     newTag: 01ae60d
   - name: localhost:5001/worker
     newTag: 01ae60d
-  - name: localhost:5001/opa
-    newName: openpolicyagent/opa
-    newTag: latest
   - name: localhost:5001/cedar-policies
     newTag: 2a95bd8
 configMapGenerator:
