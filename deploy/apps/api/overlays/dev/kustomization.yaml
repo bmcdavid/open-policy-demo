@@ -7,9 +7,9 @@ resources:
 # Image tags are the deploy contract: promotion copies these (and the bundle tag in opa-config.yaml) to the next env.
 images:
   - name: localhost:5001/api
-    newTag: 6be2f45
+    newTag: 01ae60d
   - name: localhost:5001/worker
-    newTag: 6be2f45
+    newTag: 01ae60d
   - name: localhost:5001/cedar-policies
     newTag: 2a95bd8
 configMapGenerator:
