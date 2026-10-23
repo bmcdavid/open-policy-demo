@@ -261,6 +261,7 @@ context; Docker Desktop may switch it to `docker-desktop` when it restarts, whic
 | api or OPA briefly 2/3 Ready after a sync | several pods starting at once miss the 1 s readiness probes | wait about a minute; readiness holds traffic back meanwhile |
 | `api-prod` OutOfSync after a sync, ConfigMap "requires pruning" | manual sync without Prune | sync again with **Prune** |
 | `kubectl exec` hangs, pods stuck mid-start, `Hangcheck` in `docker exec lab-worker dmesg` | Docker Desktop VM stalled (after `docker stop` of the nodes) | restart Docker Desktop; avoid stopping the nodes (section 7) |
+| `kind delete cluster` fails: `could not kill container ... did not receive an exit event` | Docker Desktop's daemon is stuck | restart Docker Desktop, then run `kind delete cluster --name lab` again |
 | `curl http://*.localtest.me` connects but hangs | Envoy's Service would only answer on nodes running Envoy | fixed in `deploy/platform/gateway/envoy-proxy.yaml` (`externalTrafficPolicy: Cluster`); check it was not reverted |
 | `deploy/build/validate.sh` never finishes when run from a wrapper | `gator` waits on an open stdin | fixed (`</dev/null`); keep it when editing the script |
 | Build script: `refusing to tag ... uncommitted changes` | the tag would not describe the content | commit, or `ALLOW_DIRTY=1` for a throwaway `<sha>-dirty` build |
