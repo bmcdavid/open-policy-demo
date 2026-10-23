@@ -13,6 +13,9 @@ spec:
       envoyService:
         name: envoy-lab
         type: NodePort
+        # Envoy Gateway defaults to Local, which only answers on nodes running an Envoy pod. kind publishes the node
+        # port from the control-plane node only, and Envoy runs on a worker, so let any node forward to it.
+        externalTrafficPolicy: Cluster
         patch:
           type: StrategicMerge
           value:
