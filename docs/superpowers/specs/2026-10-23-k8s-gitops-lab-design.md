@@ -30,7 +30,7 @@ Git is the source of truth. Bootstrap is the only imperative step.
 | 10 | Repo layout | `deploy/` folder in this repo. Argo watches only `deploy/**`. |
 | 11 | Repo access | The repo is made public; Argo pulls anonymously, no deploy key. |
 | 12 | Promotion | All Applications track one branch. Promotion is a commit that copies tags from the staging overlay to the prod overlay, followed by a manual sync of prod. Argo tracks `k8s` until it merges, then `main`. |
-| 13 | Cosmos emulator | Decided by a spike (Phase 0): vNext preview if it supports the change feed processor with a leases container and transactional batch, otherwise the classic Linux emulator. |
+| 13 | Cosmos emulator | **vNext preview** (`mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview@sha256:db53613dae19d0a3d5ad50688d14aa6e957af082dafea56b52e1bd3a6b3f1406`, `--protocol http`). Spike 2026-10-23: `CosmosInitializerService` completed first try, create returned 201 (transactional batch), and the change feed processor with the `leases` container relayed Created/Updated/Deleted to audit within 1 s, with no warnings. |
 | 14 | Cluster | kind, 1 control plane + 2 workers. Docker Desktop at 12 GB (14-16 GB if the classic emulator is chosen). Never run alongside `aspire run` (ports 8080, 8181, 8180 and memory). |
 | 15 | Ingress | Gateway API with Envoy Gateway (ingress-nginx was retired in March 2026). |
 | 16 | Observability | Standalone Aspire Dashboard in `infra`, receiving OTLP from every app pod. |
