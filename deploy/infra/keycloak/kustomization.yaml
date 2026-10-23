@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+# A ConfigMap holds non-secret files or settings that pods mount or read as env. The generator appends a hash of the
+# content to the name (keycloak-realm-<hash>) and rewrites references to it, so a realm change rolls the pod.
+configMapGenerator:
+  - name: keycloak-realm
+    files:
+      - ../../../src/AppHost/keycloak/opa-demo-realm.json

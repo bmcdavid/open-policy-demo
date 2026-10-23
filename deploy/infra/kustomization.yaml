@@ -1,0 +1,7 @@
+# Shared backing services for every app environment. Secrets live in ./secrets (Application infra-secrets).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: infra
+resources:
+  - keycloak
+  - dashboard

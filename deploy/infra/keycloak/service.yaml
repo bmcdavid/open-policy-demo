@@ -1,0 +1,16 @@
+# A Service gives the pods a stable DNS name (keycloak.infra) and virtual IP, load-balancing to every Ready pod whose
+# labels match the selector.
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  labels:
+    app.kubernetes.io/name: keycloak
+    owner: lab
+spec:
+  selector:
+    app.kubernetes.io/name: keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

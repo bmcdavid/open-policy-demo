@@ -1,0 +1,19 @@
+# App pods send OTLP to http://aspire-dashboard.infra:18889 (gRPC); the UI is exposed through the Gateway.
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspire-dashboard
+  labels:
+    app.kubernetes.io/name: aspire-dashboard
+    owner: lab
+spec:
+  selector:
+    app.kubernetes.io/name: aspire-dashboard
+  ports:
+    - name: ui
+      port: 18888
+      targetPort: ui
+    - name: otlp-grpc
+      port: 18889
+      targetPort: otlp-grpc
+      appProtocol: grpc

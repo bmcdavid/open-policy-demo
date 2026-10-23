@@ -5,7 +5,9 @@
 configs:
   cm:
     # KSOPS is a kustomize exec plugin; kustomize only runs plugins with these flags.
-    kustomize.buildOptions: --enable-alpha-plugins --enable-exec
+    # LoadRestrictionsNone lets deploy/infra/keycloak read the realm JSON from src/AppHost/keycloak, outside its
+    # kustomization root, so Aspire and the cluster share one realm file.
+    kustomize.buildOptions: --enable-alpha-plugins --enable-exec --load-restrictor LoadRestrictionsNone
     # Argo does not assess the health of child Applications by default, so sync waves in the app of apps would not
     # wait for an earlier wave to be Healthy. This restores that check (Argo CD docs, "Sync Waves" FAQ).
     resource.customizations.health.argoproj.io_Application: |

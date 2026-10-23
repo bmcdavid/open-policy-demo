@@ -1,0 +1,69 @@
+# A Deployment keeps N identical pods running (like an ECS service) and replaces them on change through a
+# ReplicaSet per version. Keycloak runs start-dev with an in-memory H2 database: the realm is re-imported on every
+# start, so a restart resets users and sessions (fine for the lab).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app.kubernetes.io/name: keycloak
+    owner: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: keycloak
+        owner: lab
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.8.1
+          args: [start-dev, --import-realm]
+          env:
+            # The public URL, used in issued tokens (iss). Pods reach the same URL through the CoreDNS rewrite.
+            - name: KC_HOSTNAME
+              value: http://keycloak.localtest.me
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef: { name: keycloak-admin, key: username }
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: keycloak-admin, key: password }
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+          # Requests are what the scheduler reserves on a node; limits are the ceiling (CPU is throttled, memory over
+          # the limit kills the container).
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          # Readiness gates traffic: the Service sends requests only to pods whose readiness probe passes.
+          # Keycloak serves health on its management port.
+          readinessProbe:
+            httpGet: { path: /health/ready, port: management }
+            periodSeconds: 5
+          # The startup probe gives a slow first start up to 5 minutes before liveness/readiness rules apply.
+          startupProbe:
+            httpGet: { path: /health/started, port: management }
+            periodSeconds: 5
+            failureThreshold: 60
+      volumes:
+        - name: realm
+          configMap:
+            name: keycloak-realm
