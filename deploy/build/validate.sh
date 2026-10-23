@@ -29,14 +29,15 @@ if [ "${1:-}" = --refresh-fixture ]; then
   {
     echo "# Generated: the dev overlay's api Deployment expanded to its Pod (see deploy/build/validate.sh for the commands)."
     echo "# Regenerate after changing the base or dev overlay: deploy/build/validate.sh --refresh-fixture"
-    gator expand --filename "$work/api.yaml" --filename "$policies/templates/expand-workloads.yaml" --format yaml
+    gator expand --filename "$work/api.yaml" --filename "$policies/templates/expand-workloads.yaml" --format yaml </dev/null
   } > "$policies/tests/fixtures/api-pod-dev.yaml"
   echo "refreshed $policies/tests/fixtures/api-pod-dev.yaml"
 fi
 
-gator verify "$policies/tests"
+# gator reads stdin whenever it is not a terminal, and blocks on an open pipe (CI, wrappers); give it none.
+gator verify "$policies/tests" </dev/null
 
 kustomize build "$policies/templates" > "$work/policy-templates.yaml"
 kustomize build "$policies/constraints" > "$work/policy-constraints.yaml"
-gator test --filename "$work" --filename deploy/platform/namespaces/namespaces.yaml
+gator test --filename "$work" --filename deploy/platform/namespaces/namespaces.yaml </dev/null
 echo "validate: ok"
