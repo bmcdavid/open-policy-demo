@@ -18,6 +18,12 @@ spec:
         app.kubernetes.io/name: cosmos
         owner: lab
     spec:
+      # The emulator health-checks its gateway at GATEWAY_PUBLIC_ENDPOINT. Through the Service that deadlocks: a
+      # Service only routes to Ready pods, and this pod is not Ready until the check passes. This /etc/hosts entry
+      # (this pod only) points the name at itself; every other pod still resolves cosmos.infra to the Service.
+      hostAliases:
+        - ip: 127.0.0.1
+          hostnames: [cosmos.infra]
       containers:
         - name: cosmos
           image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview@sha256:db53613dae19d0a3d5ad50688d14aa6e957af082dafea56b52e1bd3a6b3f1406
