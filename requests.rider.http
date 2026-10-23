@@ -115,3 +115,44 @@ X-Environment: prod
 ### Missing X-Environment: 400
 GET {{api}}/documents
 Authorization: Bearer {{readerAcme}}
+
+### Audit trail. GET /audit?tenant=&from=&to=&pageSize=&continuation= needs admin in the tenant, or platform-admin.
+### Entries appear a moment after a write (outbox -> RabbitMQ -> worker), so create a document above first.
+### admin-acme reads the acme audit trail (tenant defaults to the caller's): allowed
+GET {{api}}/audit
+Authorization: Bearer {{adminAcme}}
+X-Environment: {{environment}}
+
+### admin-acme reads one page of 2 entries; continuationToken in the response is null on the last page
+GET {{api}}/audit?tenant=acme&pageSize=2
+Authorization: Bearer {{adminAcme}}
+X-Environment: {{environment}}
+
+> {%
+    client.global.set("auditContinuation", encodeURIComponent(response.body.continuationToken ?? ""));
+%}
+
+### admin-acme reads the next page (send the request above first)
+GET {{api}}/audit?tenant=acme&pageSize=2&continuation={{auditContinuation}}
+Authorization: Bearer {{adminAcme}}
+X-Environment: {{environment}}
+
+### admin-acme reads a time range (ISO 8601, UTC)
+GET {{api}}/audit?tenant=acme&from=2026-10-01T00:00:00Z&to=2026-12-31T00:00:00Z
+Authorization: Bearer {{adminAcme}}
+X-Environment: {{environment}}
+
+### reader-acme reads the audit trail: 403 role does not permit action
+GET {{api}}/audit
+Authorization: Bearer {{readerAcme}}
+X-Environment: {{environment}}
+
+### admin-acme reads the globex audit trail: 403 cross-tenant access denied
+GET {{api}}/audit?tenant=globex
+Authorization: Bearer {{adminAcme}}
+X-Environment: {{environment}}
+
+### platform-admin reads the globex audit trail: allowed (crosses tenants)
+GET {{api}}/audit?tenant=globex
+Authorization: Bearer {{platformAdmin}}
+X-Environment: {{environment}}
