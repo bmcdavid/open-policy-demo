@@ -7,7 +7,7 @@ services:
 bundles:
   authz:
     service: registry
-    resource: kind-registry:5000/opa-bundle:2a95bd8
+    resource: kind-registry:5000/opa-bundle:05cc27c
     persist: false
     polling:
       min_delay_seconds: 30
