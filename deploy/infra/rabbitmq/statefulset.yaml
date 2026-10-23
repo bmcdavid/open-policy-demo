@@ -40,16 +40,15 @@ spec:
           resources:
             requests: { cpu: 200m, memory: 512Mi }
             limits: { cpu: "1", memory: 1Gi }
+          # TCP on the AMQP port, not rabbitmq-diagnostics: each CLI run boots an Erlang VM (7-8 s under this CPU
+          # limit), which overran the probe timeout after a node restart. RabbitMQ opens 5672 only after it has
+          # imported the definitions, so an open port means users and vhosts exist.
           readinessProbe:
-            exec:
-              command: [rabbitmq-diagnostics, -q, check_port_connectivity]
+            tcpSocket: { port: amqp }
             periodSeconds: 10
-            timeoutSeconds: 10
           startupProbe:
-            exec:
-              command: [rabbitmq-diagnostics, -q, ping]
+            tcpSocket: { port: amqp }
             periodSeconds: 5
-            timeoutSeconds: 10
             failureThreshold: 60
       volumes:
         - name: config
