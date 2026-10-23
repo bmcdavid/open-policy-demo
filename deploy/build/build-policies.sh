@@ -13,7 +13,10 @@ opa_version=1.21.4
 opa_image="openpolicyagent/opa:$opa_version"
 registry=localhost:5001
 
-tag="$(artifact_tag policies src/CedarPolicyTool)"
+# Every input of these artifacts: the policies, the tool that converts them, how both are built, and this script
+# (it pins the OPA version).
+tag="$(artifact_tag policies src/CedarPolicyTool deploy/build/cedar-policies deploy/build/build-policies.sh \
+  deploy/build/lib.sh Directory.Build.props Directory.Packages.props global.json)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 

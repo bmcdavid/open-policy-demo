@@ -7,7 +7,8 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 source deploy/build/lib.sh
 
-tag="$(artifact_tag src Directory.Build.props Directory.Packages.props global.json)"
+tag="$(artifact_tag src Directory.Build.props Directory.Packages.props global.json deploy/build/build-images.sh \
+  deploy/build/lib.sh)"
 branch="$(git branch --show-current)"
 
 for project in Api Worker; do
