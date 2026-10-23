@@ -17,6 +17,9 @@ Design and decisions: [`docs/superpowers/specs/2026-10-23-k8s-gitops-lab-design.
  registry localhost:5001 (outside the cluster): api, worker, cedar-policies images, opa-bundle artifacts
 ```
 
+New to Kubernetes? Start with [LEARNING.md](LEARNING.md): the core objects mapped to this lab's files, a hands-on
+exercise on a throwaway cluster, and an order for reading the rest.
+
 Contents: [1 Prerequisites](#1-prerequisites) · [2 First run](#2-first-run-from-a-fresh-clone) ·
 [3 Use it](#3-use-it) · [4 Environments](#4-environments) · [5 Change things](#5-change-things) ·
 [6 Guardrails](#6-guardrails-gatekeeper) · [7 Stop, rebuild, switch to Aspire](#7-stop-rebuild-switch-to-aspire) ·
@@ -263,6 +266,7 @@ context; Docker Desktop may switch it to `docker-desktop` when it restarts, whic
 | api pod `CrashLoopBackOff`, log `Deployment:AllowedEnvironments contains unknown environment` | invalid allowlist in the overlay (by design the api refuses to start) | fix `Deployment__AllowedEnvironments__N` in `overlays/<env>/kustomization.yaml` (one value per entry) |
 | api or OPA briefly 2/3 Ready after a sync | several pods starting at once miss the 1 s readiness probes | wait about a minute; readiness holds traffic back meanwhile |
 | `api-prod` OutOfSync after a sync, ConfigMap "requires pruning" | manual sync without Prune | sync again with **Prune** |
+| `kind get clusters` prints `No kind clusters found`, or `lab-*` containers stopped or missing in Docker Desktop | the nodes were stopped or removed outside kind | `kind delete cluster --name lab` (clears leftovers), then rebuild (section 7); `cluster.sh` restarts a stopped registry, and your images are still in it |
 | `kubectl exec` hangs, pods stuck mid-start, `Hangcheck` in `docker exec lab-worker dmesg` | Docker Desktop VM stalled (after `docker stop` of the nodes) | restart Docker Desktop; avoid stopping the nodes (section 7) |
 | `kind delete cluster` fails: `could not kill container ... did not receive an exit event` | Docker Desktop's daemon is stuck | restart Docker Desktop, then run `kind delete cluster --name lab` again |
 | `curl http://*.localtest.me` connects but hangs | Envoy's Service would only answer on nodes running Envoy | fixed in `deploy/platform/gateway/envoy-proxy.yaml` (`externalTrafficPolicy: Cluster`); check it was not reverted |
