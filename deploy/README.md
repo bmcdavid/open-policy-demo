@@ -63,6 +63,50 @@ Never commit a decrypted file.
 - **CoreDNS:** rewrites `keycloak.localtest.me` to the Envoy Gateway Service, so pods and the laptop use the same
   Keycloak URL (and the token issuer matches).
 
+## Environments
+
+| | dev | staging | prod |
+|---|---|---|---|
+| URL | `api.dev.localtest.me` | `api.staging.localtest.me` | `api.prod.localtest.me` |
+| Policy engine | OPA | Cedar | OPA |
+| Accepted `X-Environment` (default) | dev, staging, prod (dev) | staging, prod (staging) | prod (prod) |
+| api pods | 1 | 1 | 2 |
+| Argo sync | automatic, self-heal | automatic, self-heal | **manual** |
+
+Each environment is a kustomize overlay of `deploy/apps/api/base`; only the overlay differs.
+
+## Promote a policy change
+
+A promotion is a Git commit that copies tags from one overlay to the next. Nothing is rebuilt along the way, so prod
+runs exactly the artifacts that were tested in staging.
+
+1. Change the policy in **both** `policies/authz.rego` and `policies/authz.cedar` (they must give the same reasons),
+   commit, then build the artifacts and point dev at them:
+
+   ```bash
+   tag=$(deploy/build/build-policies.sh | tail -1)    # opa test gates it; pushes opa-bundle:<tag> and cedar-policies:<tag>
+   # set <tag> as newTag of localhost:5001/cedar-policies in overlays/dev/kustomization.yaml
+   # and in the opa-bundle resource line of overlays/dev/opa-config.yaml
+   deploy/build/validate.sh && git commit -am "deploy(dev): policies $tag" && git push
+   ```
+
+   dev rolls automatically.
+2. `deploy/build/promote.sh dev staging`, review the diff (tag lines only), commit, push. staging rolls automatically;
+   it runs Cedar, so the change shows in its 403 reasons.
+3. `deploy/build/promote.sh staging prod`, commit, push. `api-prod` turns **OutOfSync** in the Argo UI, showing the
+   tag diff, and keeps serving the old version. Press **Sync** on `api-prod`; it rolls one pod at a time.
+
+Check any environment:
+
+```bash
+tok=$(curl -s -d grant_type=password -d client_id=demo-api -d username=editor-acme -d 'password=Passw0rd!' \
+  http://keycloak.localtest.me/realms/opa-demo/protocol/openid-connect/token | jq -r .access_token)
+curl -s -X POST http://api.prod.localtest.me/documents -H "Authorization: Bearer $tok" \
+  -H 'X-Environment: prod' -H 'Content-Type: application/json' -d '{"title":"x"}'   # 403 with the current reason
+```
+
+App images follow the same path: `deploy/build/build-images.sh` prints the tag for `api` and `worker`.
+
 ## Before pushing a manifest change
 
 ```bash
