@@ -2,7 +2,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace AppHost.Cedar;
+namespace CedarPolicyTool;
 
 internal static class AgentPolicyJson
 {

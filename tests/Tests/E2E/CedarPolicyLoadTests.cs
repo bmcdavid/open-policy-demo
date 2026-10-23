@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http.Json;
 using System.Text.Json;
-using AppHost.Cedar;
+using CedarPolicyTool;
 using AwesomeAssertions;
 using Xunit;
 

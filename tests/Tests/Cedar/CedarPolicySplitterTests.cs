@@ -1,4 +1,4 @@
-﻿using AppHost.Cedar;
+﻿using CedarPolicyTool;
 using AwesomeAssertions;
 using Xunit;
 

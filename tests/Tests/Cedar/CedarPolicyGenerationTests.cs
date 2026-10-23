@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using AppHost.Cedar;
+using CedarPolicyTool;
 using AwesomeAssertions;
 using Xunit;
 

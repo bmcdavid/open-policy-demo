@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using AppHost.Cedar;
+using CedarPolicyTool;
 using Aspire.Hosting;
 using Core;
 using Aspire.Hosting.ApplicationModel;

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Does not reference Core, so it cannot carry Core.BuildInfoAttribute. -->
+    <SkipBuildInfoAttribute>true</SkipBuildInfoAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- AppHost keeps generating policies.json in-process on every Aspire start. -->
+    <InternalsVisibleTo Include="AppHost" />
+  </ItemGroup>
+</Project>

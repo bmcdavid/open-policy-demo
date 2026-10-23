@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace AppHost.Cedar;
+namespace CedarPolicyTool;
 
 /// <summary>Single pass over Cedar text that cuts it into statements and normalizes each one onto a single line.</summary>
 internal sealed class CedarLexer(string source)
