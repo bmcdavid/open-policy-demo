@@ -7,6 +7,7 @@ using Xunit;
 namespace Tests.E2E;
 
 /// <summary>Checks on a real broker what the in-memory suite cannot: the RabbitMQ adapter's topology and dead-letter path.</summary>
+[Trait("Target", "aspire-only")]
 [Collection(AppHostDefinition.Name)]
 public sealed class BrokerDeadLetterE2ETests(AppHostFixture fixture)
 {

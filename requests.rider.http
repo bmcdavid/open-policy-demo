@@ -2,6 +2,9 @@
 @keycloak = http://localhost:8080
 @api = http://localhost:5080
 @environment = dev
+# Kubernetes dev environment (deploy/README.md) instead:
+# @keycloak = http://keycloak.localtest.me
+# @api = http://api.dev.localtest.me
 
 ### Tokens (password grant). Password for every demo user: Passw0rd!
 # @name readerAcmeg

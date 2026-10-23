@@ -6,6 +6,7 @@ using Xunit;
 namespace Tests.E2E;
 
 /// <summary>Queries OPA directly with synthetic input for every user x tenant x environment x action.</summary>
+[Trait("Target", "aspire-only")]
 [Collection(AppHostDefinition.Name)]
 public sealed class ScenarioMatrixTests(AppHostFixture fixture, ITestOutputHelper output)
 {
