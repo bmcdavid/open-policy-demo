@@ -1,4 +1,5 @@
 using Core.Features.Cosmos;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,13 +35,18 @@ internal static class ServiceDefaultsExtensions
         return builder;
     }
 
-    /// <summary>Registers the Cosmos client with the serializer and gateway-mode options this repo needs.</summary>
+    /// <summary>
+    /// Registers the Cosmos client with the serializer and gateway-mode options this repo needs, and the
+    /// <see cref="Database"/> every Cosmos consumer uses (<c>Cosmos:Database</c>, default <c>policy-demo</c>).
+    /// </summary>
     public static TBuilder AddCosmosClient<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddAzureCosmosClient(ConnectionNames.Cosmos, configureClientOptions: CosmosSetup.ConfigureClientOptions);
+        var databaseName = builder.Configuration["Cosmos:Database"] ?? CosmosNames.DefaultDatabase;
+        builder.Services.AddSingleton(sp => sp.GetRequiredService<CosmosClient>().GetDatabase(databaseName));
         return builder;
     }
 

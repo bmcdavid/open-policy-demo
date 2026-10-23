@@ -37,7 +37,7 @@ internal static class CompositionRoot
         builder.Services.AddSingleton(sp => new EventDelivery(
             sp.GetRequiredService<IBrokerTransport>(), sp.GetRequiredService<ILogger<EventDelivery>>()));
         builder.Services.AddSingleton(sp => sp.GetRequiredService<EventDelivery>().Publish);
-        builder.Services.AddSingleton(sp => CosmosAudit.Upsert(sp.GetRequiredService<CosmosClient>()));
+        builder.Services.AddSingleton(sp => CosmosAudit.Upsert(sp.GetRequiredService<Database>()));
         builder.Services.AddSingleton<ICacheBackend>(sp => new ValkeyCacheBackend(sp.GetRequiredService<IConnectionMultiplexer>()));
         builder.Services.AddSingleton<DocumentCache>();
         builder.Services.AddSingleton<InvalidateDocument>(sp => sp.GetRequiredService<DocumentCache>().InvalidateAsync);

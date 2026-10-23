@@ -22,7 +22,7 @@ internal static class ConfigureServicesAndEndpoints
             {
                 o.Authority = authority;
                 o.MapInboundClaims = false;
-                o.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                o.RequireHttpsMetadata = builder.Configuration.GetValue<bool?>("Auth:RequireHttpsMetadata") ?? !builder.Environment.IsDevelopment();
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidIssuer = authority,

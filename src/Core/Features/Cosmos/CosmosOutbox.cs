@@ -22,10 +22,10 @@ public static class CosmosOutbox
     }
 
     /// <summary>Writes a standalone outbox item; a failure surfaces as <see cref="StoreUnavailableException"/> (fail closed).</summary>
-    public static WriteOutboxEvent Write(CosmosClient client)
+    public static WriteOutboxEvent Write(Database database)
     {
-        ArgumentNullException.ThrowIfNull(client);
-        var container = client.GetContainer(CosmosNames.Database, CosmosNames.Documents);
+        ArgumentNullException.ThrowIfNull(database);
+        var container = database.GetContainer(CosmosNames.Documents);
 
         return async (outboxEvent, cancellationToken) =>
         {

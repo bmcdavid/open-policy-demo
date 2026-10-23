@@ -2,7 +2,8 @@ namespace Core.Features.Cosmos;
 
 public static class CosmosNames
 {
-    public const string Database = "policy-demo";
+    /// <summary>Used when <c>Cosmos:Database</c> is not set (Aspire). Each Kubernetes environment sets its own.</summary>
+    public const string DefaultDatabase = "policy-demo";
     public const string Documents = "documents";
     public const string Audit = "audit";
     public const string Leases = "leases";

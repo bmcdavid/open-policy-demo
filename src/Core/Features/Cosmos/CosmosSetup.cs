@@ -15,11 +15,11 @@ public static class CosmosSetup
     }
 
     /// <summary>Idempotent: creates the database, containers and seed documents when missing.</summary>
-    public static async Task EnsureCreatedAsync(CosmosClient client, CancellationToken cancellationToken)
+    public static async Task EnsureCreatedAsync(Database database, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(database);
 
-        var database = (await client.CreateDatabaseIfNotExistsAsync(CosmosNames.Database, cancellationToken: cancellationToken)).Database;
+        database = (await database.Client.CreateDatabaseIfNotExistsAsync(database.Id, cancellationToken: cancellationToken)).Database;
         var documents = (await database.CreateContainerIfNotExistsAsync(
             new ContainerProperties(CosmosNames.Documents, CosmosNames.PartitionKeyPath) { DefaultTimeToLive = -1 },
             cancellationToken: cancellationToken)).Container;
