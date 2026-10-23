@@ -7,7 +7,7 @@
 # @api = http://api.dev.localtest.me
 
 ### Tokens (password grant). Password for every demo user: Passw0rd!
-# @name readerAcmeg
+# @name readerAcme
 POST {{keycloak}}/realms/opa-demo/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
