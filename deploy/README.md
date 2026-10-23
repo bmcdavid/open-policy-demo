@@ -63,6 +63,28 @@ Never commit a decrypted file.
 - **CoreDNS:** rewrites `keycloak.localtest.me` to the Envoy Gateway Service, so pods and the laptop use the same
   Keycloak URL (and the token issuer matches).
 
+## Before pushing a manifest change
+
+```bash
+deploy/build/validate.sh   # renders every overlay like Argo, then gator verify (policy tests) + gator test (manifests)
+```
+
+## Guardrails (Gatekeeper)
+
+Gatekeeper rejects objects at admission, before they are stored. Rules follow the namespace label `lab.dev/tier`:
+
+| Constraint | infra | app-* |
+|---|---|---|
+| CPU/memory requests and limits on every container (sidecars included) | ✓ | ✓ |
+| No `:latest`, no untagged image | ✓ | ✓ |
+| Images only from `localhost:5001/` | – | ✓ |
+| Labels `app.kubernetes.io/name` and `owner` | ✓ | ✓ |
+| `replicas >= 2` (api Deployment) | – | `app-prod` |
+
+The checks read Pods; an `ExpansionTemplate` makes Gatekeeper check the Pod a Deployment or StatefulSet would create,
+so a bad Deployment fails the Argo sync with the constraint message instead of failing silently later. Templates are
+copied from `gatekeeper-library` (commit in each file); tests are in `deploy/platform/gatekeeper-policies/tests`.
+
 ## Tear down
 
 ```bash

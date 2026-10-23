@@ -1,0 +1,11 @@
+# A ConstraintTemplate is a policy (Rego) plus the schema of its parameters; installing one creates a new kind
+# (e.g. K8sDisallowedTags). Constraints in ../constraints are instances of those kinds: parameters + where they apply.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - k8srequiredresources.yaml
+  - k8sdisallowedtags.yaml
+  - k8sallowedrepos.yaml
+  - k8srequiredlabels.yaml
+  - k8sreplicalimits.yaml
+  - expand-workloads.yaml

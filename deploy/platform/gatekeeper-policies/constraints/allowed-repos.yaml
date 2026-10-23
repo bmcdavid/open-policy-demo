@@ -1,0 +1,16 @@
+# App pods run only images the lab built or mirrored into the local registry.
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedRepos
+metadata:
+  name: app-images-from-local-registry
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: [Pod]
+    namespaceSelector:
+      matchLabels:
+        lab.dev/tier: app
+  parameters:
+    repos: [localhost:5001/]

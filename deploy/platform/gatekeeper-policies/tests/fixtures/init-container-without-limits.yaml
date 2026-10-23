@@ -1,0 +1,110 @@
+# Real dev api pod whose cedar sidecar (an init container) has no limits.
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/name: api
+    owner: lab
+  name: api-pod
+  namespace: app-dev
+  ownerReferences:
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: api
+    uid: ""
+spec:
+  containers:
+  - env:
+    - name: ASPNETCORE_ENVIRONMENT
+      value: Production
+    - name: Opa__BaseAddress
+      value: http://localhost:8181
+    - name: Cedar__BaseAddress
+      value: http://localhost:8180
+    - name: Auth__Authority
+      value: http://keycloak.localtest.me/realms/opa-demo
+    - name: Auth__Audience
+      value: demo-api
+    - name: Auth__RequireHttpsMetadata
+      value: "false"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: http://aspire-dashboard.infra:18889
+    - name: OTEL_SERVICE_NAME
+      value: api
+    envFrom:
+    - configMapRef:
+        name: app-settings-2ck88ct5gd
+    - secretRef:
+        name: connections
+    image: localhost:5001/api:01ae60d
+    name: api
+    ports:
+    - containerPort: 8080
+      name: http
+    readinessProbe:
+      httpGet:
+        path: /buildinfo
+        port: http
+      periodSeconds: 5
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 192Mi
+  initContainers:
+  - args:
+    - run
+    - --server
+    - --addr=127.0.0.1:8181
+    - --diagnostic-addr=0.0.0.0:8282
+    - --config-file=/config/opa-config.yaml
+    image: localhost:5001/opa:1.21.4
+    name: opa
+    ports:
+    - containerPort: 8282
+      name: opa-diag
+    readinessProbe:
+      httpGet:
+        path: /health?bundles
+        port: opa-diag
+      periodSeconds: 5
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    restartPolicy: Always
+    volumeMounts:
+    - mountPath: /config
+      name: opa-config
+      readOnly: true
+  - env:
+    - name: CEDAR_AGENT_ADDR
+      value: 127.0.0.1
+    - name: CEDAR_AGENT_PORT
+      value: "8180"
+    - name: CEDAR_AGENT_POLICIES
+      value: /config/policies.json
+    image: localhost:5001/cedar-policies:2a95bd8
+    name: cedar
+    readinessProbe:
+      exec:
+        command:
+        - bash
+        - -c
+        - </dev/tcp/127.0.0.1/8180
+      periodSeconds: 5
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+    restartPolicy: Always
+  serviceAccountName: api
+  volumes:
+  - configMap:
+      name: opa-config-b6btdkc89t
+    name: opa-config

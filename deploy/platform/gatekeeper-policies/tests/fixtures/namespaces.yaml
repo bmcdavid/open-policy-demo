@@ -1,0 +1,21 @@
+# Inventory: constraints select on namespace labels, so gator needs the namespaces too.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    lab.dev/tier: infra
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-dev
+  labels:
+    lab.dev/tier: app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-prod
+  labels:
+    lab.dev/tier: app

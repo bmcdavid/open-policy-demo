@@ -1,0 +1,16 @@
+# Infra may pull public images (pinned); only app namespaces are limited to localhost:5001.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: keycloak
+  namespace: infra
+  labels:
+    app.kubernetes.io/name: keycloak
+    owner: lab
+spec:
+  containers:
+    - name: keycloak
+      image: quay.io/keycloak/keycloak:26.8.1
+      resources:
+        requests: { cpu: 250m, memory: 512Mi }
+        limits: { cpu: "1", memory: 1Gi }
