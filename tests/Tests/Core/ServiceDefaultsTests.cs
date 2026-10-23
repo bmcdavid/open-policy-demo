@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Core.Hosting;
 using Microsoft.Azure.Cosmos;
+using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using Xunit;
 
@@ -40,6 +41,19 @@ public sealed partial class ServiceDefaultsTests
         var act = () => LogHello(logger, "acme");
 
         act.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("http://localhost:4317", true)]
+    public void TracesAreExportedOnlyWhenAnOtlpEndpointIsConfigured(string? otlpEndpoint, bool exported)
+    {
+        var builder = Builder(otlpEndpoint);
+        builder.AddServiceDefaults();
+
+        using var host = builder.Build();
+
+        (host.Services.GetService<TracerProvider>() is not null).Should().Be(exported);
     }
 
     [Fact]

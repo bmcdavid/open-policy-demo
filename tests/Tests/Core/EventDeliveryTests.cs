@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using AwesomeAssertions;
 using Core.Features.Events;
@@ -78,6 +79,51 @@ public sealed class EventDeliveryTests
 
         everything.Should().BeEquivalentTo([EventTypes.DocumentChanged, EventTypes.PolicyDecisionMade]);
         documentsOnly.Should().Equal(EventTypes.DocumentChanged);
+    }
+
+    [Fact]
+    public async Task HandlerRunsInsideASpanThatContinuesTheTraceTheEventWasWrittenIn()
+    {
+        using var recorder = new ActivityRecorder();
+        using var requests = new ActivitySource(ActivityRecorder.ParentSourceName);
+        OutboxEvent sent;
+        ActivityContext request;
+        using (var incoming = requests.StartActivity("request")!)
+        {
+            sent = Changed();
+            request = incoming.Context;
+        }
+
+        var (delivery, bus) = Create();
+        Activity? during = null;
+        await using var running = Start(delivery, Sub("audit", "#", (_, _) => { during = Activity.Current; return Task.CompletedTask; }));
+
+        await delivery.Publish(sent, Ct);
+        await bus.DrainAsync(DrainTimeout);
+
+        during.Should().NotBeNull();
+        during!.Source.Name.Should().Be(EventTracing.SourceName);
+        during.DisplayName.Should().Be("handle document.changed");
+        during.Kind.Should().Be(ActivityKind.Consumer);
+        during.TraceId.Should().Be(request.TraceId);
+        during.ParentSpanId.Should().Be(request.SpanId);
+    }
+
+    [Fact]
+    public async Task EventWithoutATraceParentIsHandledInANewTrace()
+    {
+        using var recorder = new ActivityRecorder();
+        var sent = Changed() with { TraceId = null, TraceParent = null };
+        var (delivery, bus) = Create();
+        Activity? during = null;
+        await using var running = Start(delivery, Sub("audit", "#", (_, _) => { during = Activity.Current; return Task.CompletedTask; }));
+
+        await delivery.Publish(sent, Ct);
+        await bus.DrainAsync(DrainTimeout);
+
+        during.Should().NotBeNull();
+        during!.DisplayName.Should().Be("handle document.changed");
+        during.ParentSpanId.Should().Be(default(ActivitySpanId));
     }
 
     [Fact]

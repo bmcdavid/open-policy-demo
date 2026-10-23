@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Core.Features.Events;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,7 @@ internal static partial class EventMessageProcessor
             ["Tenant"] = outboxEvent.Tenant,
         });
 
+        using var activity = EventTracing.Start("handle", outboxEvent, ActivityKind.Consumer);
         try
         {
             await handle(outboxEvent, cancellationToken);
@@ -59,6 +61,7 @@ internal static partial class EventMessageProcessor
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             var attempt = priorAttempts + 1;
             var decision = RetryPolicy.Decide(attempt, maxAttempts);
             LogFailed(logger, ex, outboxEvent.Id, outboxEvent.EventType, attempt, decision);

@@ -28,6 +28,7 @@ internal sealed record OutboxItem(
     string EventType,
     DateTimeOffset OccurredAt,
     string? TraceId,
+    string? TraceParent,
     JsonElement Payload,
     int Ttl,
     string Type = CosmosNames.OutboxType)
@@ -41,9 +42,10 @@ internal sealed record OutboxItem(
             outboxEvent.EventType,
             outboxEvent.OccurredAt,
             outboxEvent.TraceId,
+            outboxEvent.TraceParent,
             outboxEvent.Payload,
             (int)CosmosNames.OutboxTimeToLive.TotalSeconds);
     }
 
-    public OutboxEvent ToEvent() => new(Id, Tenant, EventType, OccurredAt, TraceId, Payload);
+    public OutboxEvent ToEvent() => new(Id, Tenant, EventType, OccurredAt, TraceId, Payload, TraceParent);
 }

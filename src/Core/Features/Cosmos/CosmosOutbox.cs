@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Core.Features.Documents;
@@ -57,7 +58,9 @@ public static class CosmosOutbox
                 continue;
             }
 
-            await publish(Read(change), cancellationToken);
+            var outboxEvent = Read(change);
+            using var activity = EventTracing.Start("relay", outboxEvent, ActivityKind.Producer);
+            await publish(outboxEvent, cancellationToken);
         }
     }
 
