@@ -1,0 +1,54 @@
+# Cosmos DB vNext emulator (chosen by the Phase 0 spike). Data lives in the container, so a restart empties it; the
+# Api and Worker recreate their databases and containers on startup. It does not enforce the account key.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cosmos
+  labels:
+    app.kubernetes.io/name: cosmos
+    owner: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cosmos
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cosmos
+        owner: lab
+    spec:
+      containers:
+        - name: cosmos
+          image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview@sha256:db53613dae19d0a3d5ad50688d14aa6e957af082dafea56b52e1bd3a6b3f1406
+          env:
+            - name: PROTOCOL
+              value: http
+            # The SDK reads the endpoint the emulator advertises and sends later requests there. The default is
+            # localhost, which inside an Api pod is the pod itself, so advertise the Service name instead.
+            - name: GATEWAY_PUBLIC_ENDPOINT
+              value: cosmos.infra
+            - name: ENABLE_EXPLORER
+              value: "false"
+            - name: ENABLE_TELEMETRY
+              value: "false"
+          ports:
+            - name: gateway
+              containerPort: 8081
+            - name: health
+              containerPort: 8080
+          resources:
+            requests: { cpu: 500m, memory: 1Gi }
+            limits: { cpu: "2", memory: 2Gi }
+          startupProbe:
+            httpGet: { path: /alive, port: health }
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: { path: /ready, port: health }
+            periodSeconds: 5
+          # Liveness restarts a container that stops answering (after startup has succeeded).
+          livenessProbe:
+            httpGet: { path: /alive, port: health }
+            periodSeconds: 10
+            failureThreshold: 6
