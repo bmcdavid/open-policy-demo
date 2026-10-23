@@ -17,14 +17,42 @@ Design: [`docs/superpowers/specs/2026-10-23-k8s-gitops-lab-design.md`](../docs/s
 Every step is idempotent; re-running it on an existing cluster changes nothing.
 
 ```bash
-deploy/bootstrap/cluster.sh   # kind cluster "lab" (context kind-lab), registry localhost:5001, CoreDNS rewrite
+deploy/bootstrap/cluster.sh        # kind cluster "lab" (context kind-lab), registry localhost:5001, CoreDNS rewrite
+deploy/bootstrap/argocd-install.sh # Argo CD + KSOPS, age key Secret, root Application
 ```
 
 Check it:
 
 ```bash
-kubectl get nodes   # 3 nodes, all Ready
+kubectl get nodes                       # 3 nodes, all Ready
+kubectl -n argocd get applications      # every Application Synced and Healthy
 ```
+
+`argocd-install.sh` needs the age key at `~/.config/sops/age/keys.txt` (`age-keygen -o ~/.config/sops/age/keys.txt`)
+and Argo pulls from the pushed `k8s` branch, so push before expecting a change in the cluster.
+
+## Argo CD UI
+
+```bash
+argocd admin initial-password -n argocd                # user: admin
+kubectl -n argocd port-forward svc/argocd-server 8443:443
+```
+
+Open <https://localhost:8443> (self-signed certificate).
+
+## Secrets (SOPS + age)
+
+Files matching `deploy/**/secrets/*.sops.yaml` are encrypted with the age public key in `.sops.yaml`. Argo decrypts
+them with KSOPS using the private key that `argocd-install.sh` copied into Secret `argocd/sops-age`.
+
+On macOS, sops looks for the key under `~/Library/Application Support`, so point it at the lab key first:
+
+```bash
+export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+sops deploy/infra/secrets/smoke.sops.yaml   # edit decrypted; re-encrypts on save
+```
+
+Never commit a decrypted file.
 
 ## What runs where
 
