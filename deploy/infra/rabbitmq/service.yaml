@@ -1,0 +1,35 @@
+# Headless (clusterIP: None): no virtual IP, DNS returns the pod itself (rabbitmq-0.rabbitmq-headless).
+# A StatefulSet needs one to give its pods stable DNS names.
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-headless
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    owner: lab
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+---
+# What clients use: amqp://<user>:<pass>@rabbitmq.infra:5672/<vhost>
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    owner: lab
+spec:
+  selector:
+    app.kubernetes.io/name: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: amqp
+    - name: management
+      port: 15672
+      targetPort: management

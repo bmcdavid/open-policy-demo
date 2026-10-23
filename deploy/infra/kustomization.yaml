@@ -5,3 +5,5 @@ namespace: infra
 resources:
   - keycloak
   - dashboard
+  - rabbitmq
+  - valkey

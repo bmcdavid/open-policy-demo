@@ -1,0 +1,71 @@
+# A StatefulSet is a Deployment for stateful pods: each pod has a stable name (rabbitmq-0) and its own
+# PersistentVolumeClaim (a request for disk, here served by kind's local-path provisioner) that survives pod
+# restarts. RabbitMQ stores its data under its node name, so both must stay stable.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    owner: lab
+spec:
+  serviceName: rabbitmq-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rabbitmq
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rabbitmq
+        owner: lab
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:4.4.0-management
+          ports:
+            - name: amqp
+              containerPort: 5672
+            - name: management
+              containerPort: 15672
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/rabbitmq
+            - name: config
+              mountPath: /etc/rabbitmq/conf.d/20-lab.conf
+              subPath: 20-lab.conf
+            - name: definitions
+              mountPath: /etc/rabbitmq/definitions
+              readOnly: true
+          resources:
+            requests: { cpu: 200m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          readinessProbe:
+            exec:
+              command: [rabbitmq-diagnostics, -q, check_port_connectivity]
+            periodSeconds: 10
+            timeoutSeconds: 10
+          startupProbe:
+            exec:
+              command: [rabbitmq-diagnostics, -q, ping]
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 60
+      volumes:
+        - name: config
+          configMap:
+            name: rabbitmq-config
+        - name: definitions
+          secret:
+            secretName: rabbitmq
+            items:
+              - key: definitions.json
+                path: definitions.json
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
