@@ -36,8 +36,8 @@ spec:
     - configMapRef:
         name: app-settings-2ck88ct5gd
     - secretRef:
-        name: connections
-    image: localhost:5001/api:01ae60d
+        name: connections-2c4649hcf6
+    image: localhost:5001/api:6560be9
     name: api
     ports:
     - containerPort: 8080
@@ -90,7 +90,7 @@ spec:
       value: "8180"
     - name: CEDAR_AGENT_POLICIES
       value: /config/policies.json
-    image: localhost:5001/cedar-policies:2a95bd8
+    image: localhost:5001/cedar-policies:6560be9
     name: cedar
     readinessProbe:
       exec:
@@ -110,6 +110,6 @@ spec:
   serviceAccountName: api
   volumes:
   - configMap:
-      name: opa-config-b6btdkc89t
+      name: opa-config-h4tb6b46f6
     name: opa-config
 

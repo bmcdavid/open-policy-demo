@@ -31,6 +31,7 @@ if [ "${1:-}" = --refresh-fixture ]; then
     echo "# Regenerate after changing the base or dev overlay: deploy/build/validate.sh --refresh-fixture"
     gator expand --filename "$work/api.yaml" --filename "$policies/templates/expand-workloads.yaml" --format yaml </dev/null
   } > "$policies/tests/fixtures/api-pod-dev.yaml"
+  rm "$work/api.yaml"   # gator test below reads every file in $work
   echo "refreshed $policies/tests/fixtures/api-pod-dev.yaml"
 fi
 

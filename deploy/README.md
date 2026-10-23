@@ -210,7 +210,9 @@ sops deploy/infra/secrets/keycloak-admin.sops.yaml   # opens decrypted in $EDITO
 deploy/bootstrap/new-secrets.sh --rotate             # new passwords everywhere
 ```
 
-RabbitMQ and Keycloak read their secrets only at startup; after a rotation syncs, run
+Each environment's `connections` Secret gets a content-hashed name (`connections-<hash>`), so a rotation rolls that
+environment's api and worker by itself (prod on its manual Sync, with Prune). RabbitMQ and Keycloak read their
+secrets only at startup; after a rotation syncs, restart them so the new passwords take effect:
 `kubectl --context kind-lab -n infra rollout restart statefulset/rabbitmq deployment/keycloak`.
 
 ## 6. Guardrails (Gatekeeper)

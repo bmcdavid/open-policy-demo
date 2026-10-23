@@ -69,10 +69,14 @@ def rabbit_hash(pw):
     return base64.b64encode(salt + hashlib.sha256(salt + pw.encode()).digest()).decode()
 
 
-def secret(path, comment, name, namespace, data):
+def secret(path, comment, name, namespace, data, hashed=False):
     lines = [f"# {line}" for line in comment] + [
-        "apiVersion: v1", "kind: Secret", "metadata:", f"  name: {name}", f"  namespace: {namespace}",
-        "type: Opaque", "stringData:"]
+        "apiVersion: v1", "kind: Secret", "metadata:", f"  name: {name}"]
+    if hashed:
+        lines += ["  annotations:",
+                  "    # Hash the name (connections-<hash>), so a changed Secret rolls the api and worker that read it as env vars.",
+                  '    kustomize.config.k8s.io/needs-hash: "true"']
+    lines += [f"  namespace: {namespace}", "type: Opaque", "stringData:"]
     for key, value in data.items():
         if "\n" in value:
             lines.append(f"  {key}: |")
@@ -124,7 +128,8 @@ for e in envs:
            "connections", f"app-{e}",
            {"ConnectionStrings__cosmos": cosmos,
             "ConnectionStrings__rabbitmq": f"amqp://app-{e}:{passwords[f'app-{e}']}@rabbitmq.infra:5672/{e}",
-            "ConnectionStrings__valkey": f"valkey.infra:6379,defaultDatabase={valkey_db[e]}"})
+            "ConnectionStrings__valkey": f"valkey.infra:6379,defaultDatabase={valkey_db[e]}"},
+           hashed=True)
 PY
 
 while IFS= read -r plain; do
@@ -137,6 +142,7 @@ done < <(find "$work" -name '*.sops.yaml' | sort)
 
 echo "new-secrets: encrypted to $public_key. Commit .sops.yaml and the *.sops.yaml files."
 if [ "$rotate" -eq 1 ]; then
-  echo "On a running cluster, after Argo syncs: RabbitMQ and Keycloak read these only at startup, so restart them:"
+  echo "On a running cluster, after Argo syncs (the api and worker roll by themselves; prod on its manual Sync):"
+  echo "RabbitMQ and Keycloak read these only at startup, so restart them:"
   echo "  kubectl -n infra rollout restart statefulset/rabbitmq deployment/keycloak"
 fi
