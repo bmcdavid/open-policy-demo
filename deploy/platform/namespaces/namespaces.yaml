@@ -1,0 +1,53 @@
+# A Namespace is a named scope for objects: names, Secrets, RBAC and quotas are per namespace.
+# The lab.dev/tier label is what Gateway routes and Gatekeeper constraints select on.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    lab.dev/tier: platform
+  annotations:
+    # Argo runs here; never let a prune or an Application deletion remove it.
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gatekeeper-system
+  labels:
+    lab.dev/tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway-system
+  labels:
+    lab.dev/tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    lab.dev/tier: infra
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-dev
+  labels:
+    lab.dev/tier: app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-staging
+  labels:
+    lab.dev/tier: app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-prod
+  labels:
+    lab.dev/tier: app

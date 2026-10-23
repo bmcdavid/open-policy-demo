@@ -1,0 +1,22 @@
+# An Application tells Argo CD: keep the objects at this Git path applied to this cluster.
+# "App of apps": this root Application's path holds only other Applications, one per component.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bmcdavid/open-policy-demo.git
+    targetRevision: k8s
+    path: deploy/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    # automated: apply Git changes without a click. prune: delete what was removed from Git.
+    # selfHeal: revert changes made in the cluster by hand.
+    automated:
+      prune: true
+      selfHeal: true

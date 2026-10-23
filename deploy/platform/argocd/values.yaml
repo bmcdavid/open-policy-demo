@@ -1,0 +1,56 @@
+# Values for the argo-cd Helm chart (version pinned in deploy/bootstrap/argocd-install.sh).
+# Helm renders a chart (templated manifests) with these values; argocd-install.sh installs it imperatively,
+# because Argo cannot install itself before it exists.
+
+configs:
+  cm:
+    # KSOPS is a kustomize exec plugin; kustomize only runs plugins with these flags.
+    kustomize.buildOptions: --enable-alpha-plugins --enable-exec
+    # Argo does not assess the health of child Applications by default, so sync waves in the app of apps would not
+    # wait for an earlier wave to be Healthy. This restores that check (Argo CD docs, "Sync Waves" FAQ).
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs
+
+repoServer:
+  # The repo server renders manifests from Git. The init container copies the ksops and kustomize binaries into a
+  # shared emptyDir volume, which the main container mounts over its own tools (KSOPS README, Argo CD Helm values).
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+    - name: sops-age
+      secret:
+        secretName: sops-age
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.5.1
+      command: [/usr/local/bin/ksops, install, --with-kustomize, /custom-tools]
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+  volumeMounts:
+    - mountPath: /usr/local/bin/kustomize
+      name: custom-tools
+      subPath: kustomize
+    - mountPath: /usr/local/bin/ksops
+      name: custom-tools
+      subPath: ksops
+    # The age private key, from the Secret that argocd-install.sh creates. SOPS finds it via XDG_CONFIG_HOME.
+    - mountPath: /home/argocd/.config/sops/age
+      name: sops-age
+      readOnly: true
+  env:
+    - name: XDG_CONFIG_HOME
+      value: /home/argocd/.config
+    - name: SOPS_AGE_KEY_FILE
+      value: /home/argocd/.config/sops/age/keys.txt
