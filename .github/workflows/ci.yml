@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, "eval/**"]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -23,7 +24,15 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet build --configuration Release
-      - run: dotnet test --project tests/Tests --configuration Release --no-build --filter-not-namespace "Tests.E2E"
+      # Generated code is filtered out by tests/Tests/coverage.settings.xml. The path must be absolute.
+      - run: >
+          dotnet test --project tests/Tests --configuration Release --no-build --filter-not-namespace "Tests.E2E"
+          --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
+          --coverage-settings "${{ github.workspace }}/tests/Tests/coverage.settings.xml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit
+          path: TestResults/unit.cobertura.xml
 
   e2e:
     name: End-to-end tests (Aspire, Docker)
@@ -35,4 +44,65 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet build --configuration Release
-      - run: dotnet test --project tests/Tests --configuration Release --no-build --filter-namespace "Tests.E2E"
+      - run: dotnet tool restore
+      # The services run as child processes of the AppHost, so only dotnet-coverage (not --coverage) sees them.
+      - name: Run end-to-end tests
+        timeout-minutes: 20
+        run: >
+          dotnet dotnet-coverage collect -s tests/Tests/coverage.settings.xml -f cobertura -o TestResults/e2e.cobertura.xml
+          "dotnet test --project tests/Tests --configuration Release --no-build --filter-namespace Tests.E2E --output Detailed"
+      - name: Container state
+        if: failure() || cancelled()
+        run: |
+          docker ps -a
+          for c in $(docker ps -aq); do
+            echo "::group::$(docker inspect --format '{{.Name}} ({{.Config.Image}}) {{.State.Status}}' "$c")"
+            docker logs --tail 40 "$c" 2>&1
+            echo "::endgroup::"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-e2e
+          path: TestResults/e2e.cobertura.xml
+
+  coverage:
+    name: Coverage report
+    needs: [unit, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: TestResults
+          merge-multiple: true
+      - run: dotnet tool restore
+      - run: dotnet dotnet-coverage merge -f cobertura -o TestResults/merged.cobertura.xml TestResults/unit.cobertura.xml TestResults/e2e.cobertura.xml
+      - name: Code coverage report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: TestResults/merged.cobertura.xml
+          badge: true
+          format: markdown
+          indicators: true
+          output: both
+      - name: Add coverage to the job summary
+        run: cat code-coverage-results.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Add coverage PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        # Fork pull requests get a read-only token and cannot comment.
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          recreate: true
+          path: code-coverage-results.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-merged
+          path: TestResults/merged.cobertura.xml
