@@ -36,7 +36,9 @@ jobs:
 
   e2e:
     name: End-to-end tests (Aspire, Docker)
-    runs-on: ubuntu-latest
+    # Not ubuntu-latest: on 26.04 the dotnet-coverage profiler does not initialize, so the child processes Aspire starts
+    # report no coverage at all.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
