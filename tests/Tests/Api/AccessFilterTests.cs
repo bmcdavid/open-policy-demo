@@ -77,11 +77,11 @@ public sealed class AccessFilterTests
         public Task<object?> RunExisting(string action, Guid id)
         {
             Http.Request.RouteValues["id"] = id.ToString();
-            return Run(new AccessFilter(action, Resource.Document, existing: true));
+            return Run(new AccessFilter(new AccessRequirement(action, Resource.Document, AccessScope.Document)));
         }
 
         public Task<object?> RunInTenant(string action, string resourceType = Resource.Document, params object?[] arguments) =>
-            Run(new AccessFilter(action, resourceType, existing: false), arguments);
+            Run(new AccessFilter(new AccessRequirement(action, resourceType, AccessScope.Tenant)), arguments);
     }
 
     private static DefaultHttpContext Context()

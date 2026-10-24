@@ -24,8 +24,11 @@ internal static class Resource
 /// closed with 503); a denial is 403 with reasons; an unreachable engine is 503. The endpoint only runs when the request
 /// is allowed, and reads what was loaded from <see cref="AuthorizedDocument"/> or <see cref="TenantScope"/>.
 /// </summary>
-internal sealed class AccessFilter(string action, string resourceType, bool existing) : IEndpointFilter
+internal sealed class AccessFilter(AccessRequirement requirement) : IEndpointFilter
 {
+    /// <summary>The route value naming the document on a route declared with <c>AuthorizeExisting</c>.</summary>
+    public const string DocumentIdRouteValue = "id";
+
     public static InvalidOperationException NotAuthorized(string accessor) =>
         new($"{accessor} was read on a route that is not declared with AuthorizeExisting or AuthorizeInTenant.");
 
@@ -43,21 +46,21 @@ internal sealed class AccessFilter(string action, string resourceType, bool exis
         Document? document = null;
         string? tenant = null;
         PolicyResource resource;
-        if (existing)
+        if (requirement.Scope == AccessScope.Document)
         {
-            var id = Guid.Parse(http.GetRouteValue("id")!.ToString()!);
+            var id = Guid.Parse(http.GetRouteValue(DocumentIdRouteValue)!.ToString()!);
             document = await services.GetRequiredService<IDocumentStore>().FindAsync(id, http.RequestAborted);
             if (document is null)
             {
                 return Results.NotFound();
             }
 
-            resource = new PolicyResource(resourceType, document.Tenant, document.Id.ToString());
+            resource = new PolicyResource(requirement.ResourceType, document.Tenant, document.Id.ToString());
         }
         else
         {
             tenant = RequestedTenant(context) ?? CurrentSubject.From(http.User).Tenant;
-            resource = new PolicyResource(resourceType, tenant, null);
+            resource = new PolicyResource(requirement.ResourceType, tenant, null);
         }
 
         var denied = await EnforceAsync(http, environment, resource);
@@ -85,7 +88,7 @@ internal sealed class AccessFilter(string action, string resourceType, bool exis
     private async Task<IResult?> EnforceAsync(HttpContext http, string environment, PolicyResource resource)
     {
         var services = http.RequestServices;
-        var input = new PolicyInput(CurrentSubject.From(http.User), environment, action, resource);
+        var input = new PolicyInput(CurrentSubject.From(http.User), environment, requirement.Action, resource);
 
         PolicyDecision decision;
         try
@@ -105,15 +108,34 @@ internal sealed class AccessFilter(string action, string resourceType, bool exis
     }
 }
 
+/// <summary>What a route needs from policy. Endpoint metadata, so wiring can be inspected (and tested) without calling the route.</summary>
+internal sealed record AccessRequirement(string Action, string ResourceType, AccessScope Scope);
+
+internal enum AccessScope
+{
+    /// <summary>One document, named by the route; exposed as <see cref="AuthorizedDocument"/>.</summary>
+    Document,
+
+    /// <summary>A tenant's collection; exposed as <see cref="TenantScope"/>.</summary>
+    Tenant,
+}
+
 internal static class AccessExtensions
 {
     /// <summary>Loads the document named by the route's <c>id</c>, asks policy about it, and exposes it as <see cref="AuthorizedDocument"/>.</summary>
     public static TBuilder AuthorizeExisting<TBuilder>(this TBuilder builder, string action)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter(new AccessFilter(action, Resource.Document, existing: true));
+        builder.Require(new AccessRequirement(action, Resource.Document, AccessScope.Document));
 
     /// <summary>Asks policy about a tenant's collection (the body's or query's tenant, else the caller's) and exposes it as <see cref="TenantScope"/>.</summary>
     public static TBuilder AuthorizeInTenant<TBuilder>(this TBuilder builder, string action, string resourceType)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter(new AccessFilter(action, resourceType, existing: false));
+        builder.Require(new AccessRequirement(action, resourceType, AccessScope.Tenant));
+
+    private static TBuilder Require<TBuilder>(this TBuilder builder, AccessRequirement requirement)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(requirement);
+        return builder.AddEndpointFilter(new AccessFilter(requirement));
+    }
 }
