@@ -1,6 +1,6 @@
 # Learning Lab: Kubernetes + Argo CD + Policy Sidecars
 
-Date: 2026-10-23. Supersedes the earlier draft in `docs/DESIGN.md`.
+Date: 2026-10-23.
 
 ## Goal
 

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using AwesomeAssertions;
 using Core.Features.Events;
 using Core.Features.Messaging;

@@ -1,7 +1,6 @@
 using Core.Features.Cosmos;
 using Core.Features.Events;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Trace;

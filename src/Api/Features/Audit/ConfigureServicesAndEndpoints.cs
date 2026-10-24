@@ -1,5 +1,4 @@
 using Api.Features.Authorization;
-using Api.Features.Documents;
 using Core;
 using Core.Features.Audit;
 using Core.Features.Authorization;

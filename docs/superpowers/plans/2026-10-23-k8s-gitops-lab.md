@@ -1,5 +1,7 @@
 # Kubernetes + Argo CD Learning Lab Implementation Plan
 
+> **Status: complete.** Merged to `main` (PR #3, Argo tracks `main` since bcad2a9). Kept as a record of how the lab was built; the checkboxes below were not ticked as work progressed. Current instructions are in `deploy/README.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Deploy this repo's authorization demo (Api with OPA and Cedar sidecars, Worker, Keycloak, Cosmos, RabbitMQ, Valkey) to a local kind cluster managed by Argo CD, with Gatekeeper guardrails and a dev → staging → prod promotion flow.
