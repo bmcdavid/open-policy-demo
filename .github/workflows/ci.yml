@@ -47,8 +47,12 @@ jobs:
       - run: dotnet tool restore
       # Aspire gives the Cosmos emulator its HTTPS certificate from the dev cert. Without a trusted one the emulator falls
       # back to HTTP while Aspire's readiness check still uses HTTPS, so nothing downstream of Cosmos ever starts.
+      # On Linux the trust is only honored when SSL_CERT_DIR lists the directory dev-certs writes it to, and that must
+      # hold for the later steps too, so it goes into GITHUB_ENV.
       - name: Trust the development certificate
         run: |
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+          export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
           dotnet dev-certs https --trust
           dotnet dev-certs https --check --trust
       # The services run as child processes of the AppHost, so only dotnet-coverage (not --coverage) sees them.
