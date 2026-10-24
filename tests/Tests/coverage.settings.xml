@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Microsoft.Testing.Extensions.CodeCoverage settings (passed by the coverage-settings arg in .github/workflows/ci.yml). -->
+<Configuration>
+  <CodeCoverage>
+    <ModulePaths>
+      <!-- Only this repo's product assemblies: not the tests, the local Aspire orchestration, or third-party packages
+           (the e2e run instruments every process Aspire launches). -->
+      <Include>
+        <ModulePath>.*[\\/]Api\.dll$</ModulePath>
+        <ModulePath>.*[\\/]Core\.dll$</ModulePath>
+        <ModulePath>.*[\\/]Worker\.dll$</ModulePath>
+        <ModulePath>.*[\\/]CedarPolicyTool\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
+    <Sources>
+      <Exclude>
+        <!-- Source-generated code (LoggerMessage, regex generators, etc.) -->
+        <Source>.*[\\/]obj[\\/].*</Source>
+      </Exclude>
+    </Sources>
+    <Attributes>
+      <Exclude>
+        <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+        <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+        <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
+      </Exclude>
+    </Attributes>
+  </CodeCoverage>
+</Configuration>

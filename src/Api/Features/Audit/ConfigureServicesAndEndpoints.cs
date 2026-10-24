@@ -12,31 +12,26 @@ internal static class ConfigureServicesAndEndpoints
     private const int DefaultPageSize = 50;
     private const int MaxPageSize = 100;
 
-    public static WebApplicationBuilder ConfigureAudit(this WebApplicationBuilder builder) => builder;
-
     public static void MapAuditEndpoints(this WebApplication app)
     {
         var audit = app.MapGroup(ApiRoutes.Audit)
             .RequireAuthorization();
 
-        audit.MapGet("/", Query);
+        audit.MapGet("/", Query).AuthorizeInTenant(PolicyActions.Audit, Resource.Audit);
     }
 
-    private static Task<IResult> Query(
-        HttpContext http, string? tenant, DateTimeOffset? from, DateTimeOffset? to, string? continuation, int? pageSize,
-        DocumentAccess access, QueryAudit queryAudit) =>
-        access.InTenant(http, "audit", PolicyActions.Audit, tenant, async effectiveTenant =>
+    private static async Task<IResult> Query(
+        TenantScope scope, DateTimeOffset? from, DateTimeOffset? to, string? continuation, int? pageSize,
+        QueryAudit queryAudit, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(scope.Tenant))
         {
-            if (string.IsNullOrWhiteSpace(effectiveTenant))
-            {
-                return Results.BadRequest(new { error = "tenant is required" });
-            }
+            return Results.BadRequest(new { error = "tenant is required" });
+        }
 
-            var page = await queryAudit(
-                new AuditQuery(effectiveTenant, from, to, continuation, ClampPageSize(pageSize)),
-                http.RequestAborted);
-            return Results.Ok(page);
-        }, http.RequestAborted);
+        var page = await queryAudit(new AuditQuery(scope.Tenant, from, to, continuation, ClampPageSize(pageSize)), cancellationToken);
+        return Results.Ok(page);
+    }
 
     private static int ClampPageSize(int? requested) =>
         requested is null or <= 0 ? DefaultPageSize : Math.Min(requested.Value, MaxPageSize);

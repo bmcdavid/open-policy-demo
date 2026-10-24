@@ -4,53 +4,48 @@ using Core.Features.Documents;
 
 namespace Api.Features.Documents;
 
-internal sealed record CreateDocumentBody(string? Title, string? Tenant);
+internal sealed record CreateDocumentBody(string? Title, string? Tenant) : ITenantRequest;
 
 internal sealed record UpdateDocumentBody(string? Title);
 
-/// <summary>What each document endpoint does once <see cref="DocumentAccess"/> has allowed it.</summary>
+/// <summary>What each document endpoint does once <see cref="AccessFilter"/> has allowed it.</summary>
 internal static class DocumentEndpoints
 {
-    public static Task<IResult> List(HttpContext http, string? tenant, DocumentAccess access, IDocumentStore store) =>
-        access.InTenant(http, "document", PolicyActions.List, tenant,
-            async t => Results.Ok(await store.ListAsync(t, http.RequestAborted)), http.RequestAborted);
+    public static async Task<IResult> List(TenantScope scope, IDocumentStore store, CancellationToken cancellationToken) =>
+        Results.Ok(await store.ListAsync(scope.Tenant, cancellationToken));
 
-    public static Task<IResult> Get(HttpContext http, Guid id, DocumentAccess access) =>
-        access.Existing(http, id, PolicyActions.Read, document => Task.FromResult(Results.Ok(document)), http.RequestAborted);
+    public static IResult Get(AuthorizedDocument document) => Results.Ok(document.Value);
 
-    public static Task<IResult> Create(HttpContext http, CreateDocumentBody body, DocumentAccess access, IDocumentStore store) =>
-        access.InTenant(http, "document", PolicyActions.Create, body.Tenant, async tenant =>
+    public static async Task<IResult> Create(CreateDocumentBody body, TenantScope scope, IDocumentStore store, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body.Title))
         {
-            if (string.IsNullOrWhiteSpace(body.Title))
-            {
-                return Results.BadRequest(new { error = "title is required" });
-            }
+            return Results.BadRequest(new { error = "title is required" });
+        }
 
-            if (string.IsNullOrWhiteSpace(tenant))
-            {
-                return Results.BadRequest(new { error = "tenant is required" });
-            }
-
-            var document = await store.AddAsync(tenant, body.Title, http.RequestAborted);
-            return Results.Created("/documents/" + document.Id, document);
-        }, http.RequestAborted);
-
-    public static Task<IResult> Update(HttpContext http, Guid id, UpdateDocumentBody body, DocumentAccess access, IDocumentStore store) =>
-        access.Existing(http, id, PolicyActions.Update, async _ =>
+        if (string.IsNullOrWhiteSpace(scope.Tenant))
         {
-            if (string.IsNullOrWhiteSpace(body.Title))
-            {
-                return Results.BadRequest(new { error = "title is required" });
-            }
+            return Results.BadRequest(new { error = "tenant is required" });
+        }
 
-            var updated = await store.UpdateAsync(id, body.Title, http.RequestAborted);
-            return updated is null ? Results.NotFound() : Results.Ok(updated);
-        }, http.RequestAborted);
+        var document = await store.AddAsync(scope.Tenant, body.Title, cancellationToken);
+        return Results.Created("/documents/" + document.Id, document);
+    }
 
-    public static Task<IResult> Delete(HttpContext http, Guid id, DocumentAccess access, IDocumentStore store) =>
-        access.Existing(http, id, PolicyActions.Delete, async document =>
+    public static async Task<IResult> Update(UpdateDocumentBody body, AuthorizedDocument document, IDocumentStore store, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body.Title))
         {
-            await store.RemoveAsync(document.Id, http.RequestAborted);
-            return Results.NoContent();
-        }, http.RequestAborted);
+            return Results.BadRequest(new { error = "title is required" });
+        }
+
+        var updated = await store.UpdateAsync(document.Value.Id, body.Title, cancellationToken);
+        return updated is null ? Results.NotFound() : Results.Ok(updated);
+    }
+
+    public static async Task<IResult> Delete(AuthorizedDocument document, IDocumentStore store, CancellationToken cancellationToken)
+    {
+        await store.RemoveAsync(document.Value.Id, cancellationToken);
+        return Results.NoContent();
+    }
 }

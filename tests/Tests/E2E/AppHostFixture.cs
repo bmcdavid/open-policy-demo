@@ -40,9 +40,10 @@ public sealed class AppHostFixture : IAsyncLifetime
 
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
         _app = await builder.BuildAsync();
-        await _app.StartAsync();
 
+        // Covers image pulls too, so a stuck container fails the run with a timeout instead of hanging it.
         using var timeout = new CancellationTokenSource(StartupTimeout);
+        await _app.StartAsync(timeout.Token);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("api", timeout.Token);
 
         _opaUri = _app.GetEndpoint("opa", "http");

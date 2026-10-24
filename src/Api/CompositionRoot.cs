@@ -17,8 +17,6 @@ internal static class CompositionRoot
         builder.Services.AddExceptionHandler<StoreUnavailableExceptionHandler>();
         builder.Services.AddProblemDetails();
         builder.ConfigureAuthorization();
-        builder.ConfigureHome();
         builder.ConfigureDocuments();
-        builder.ConfigureAudit();
     }
 }
