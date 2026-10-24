@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "eval/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build --configuration Release
+      - run: dotnet test --project tests/Tests --configuration Release --no-build --filter-not-namespace "Tests.E2E"
+
+  e2e:
+    name: End-to-end tests (Aspire, Docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build --configuration Release
+      - run: dotnet test --project tests/Tests --configuration Release --no-build --filter-namespace "Tests.E2E"
