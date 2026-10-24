@@ -45,6 +45,12 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet build --configuration Release
       - run: dotnet tool restore
+      # Aspire gives the Cosmos emulator its HTTPS certificate from the dev cert. Without a trusted one the emulator falls
+      # back to HTTP while Aspire's readiness check still uses HTTPS, so nothing downstream of Cosmos ever starts.
+      - name: Trust the development certificate
+        run: |
+          dotnet dev-certs https --trust
+          dotnet dev-certs https --check --trust
       # The services run as child processes of the AppHost, so only dotnet-coverage (not --coverage) sees them.
       - name: Run end-to-end tests
         timeout-minutes: 20
