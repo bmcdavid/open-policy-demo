@@ -57,7 +57,8 @@ internal static class ConfigureServicesAndEndpoints
 
         // Built here, not lazily, so invalid Deployment:* configuration fails at startup rather than on the first request.
         builder.Services.AddSingleton(DeploymentEnvironment.FromConfiguration(builder.Configuration));
-        builder.Services.AddTransient<DocumentAccess>();
+        builder.Services.AddScoped<AuthorizedDocument>();
+        builder.Services.AddScoped<TenantScope>();
         return builder;
     }
 }
