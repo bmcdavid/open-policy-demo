@@ -8,8 +8,6 @@ internal sealed record WhoAmIResponse(string Id, IReadOnlyList<string> Roles, st
 
 internal static class ConfigureServicesAndEndpoints
 {
-    public static WebApplicationBuilder ConfigureHome(this WebApplicationBuilder builder) => builder;
-
     public static void MapHomeEndpoints(this WebApplication app)
     {
         app.MapGet("/whoami", (HttpContext http) =>

@@ -12,8 +12,6 @@ internal static class ConfigureServicesAndEndpoints
     private const int DefaultPageSize = 50;
     private const int MaxPageSize = 100;
 
-    public static WebApplicationBuilder ConfigureAudit(this WebApplicationBuilder builder) => builder;
-
     public static void MapAuditEndpoints(this WebApplication app)
     {
         var audit = app.MapGroup(ApiRoutes.Audit)
