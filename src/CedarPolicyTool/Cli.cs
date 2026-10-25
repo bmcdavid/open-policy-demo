@@ -10,7 +10,7 @@ namespace CedarPolicyTool;
 /// </summary>
 internal static class Cli
 {
-    private const string Usage = "usage: CedarPolicyTool generate <authz.cedar> <policies.json>";
+    private const string _usage = "usage: CedarPolicyTool generate <authz.cedar> <policies.json>";
 
     public static int Run(IReadOnlyList<string> args, TextWriter error)
     {
@@ -19,7 +19,7 @@ internal static class Cli
 
         if (args.Count != 3 || args[0] != "generate")
         {
-            error.WriteLine(Usage);
+            error.WriteLine(_usage);
             return 2;
         }
 

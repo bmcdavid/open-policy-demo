@@ -11,7 +11,7 @@ namespace Core.Features.Cosmos;
 /// </summary>
 public sealed class CosmosDocumentStore(Database database, TimeProvider? time = null) : IDocumentStore
 {
-    private const int MaxConflictRetries = 3;
+    private const int _maxConflictRetries = 3;
 
     private readonly Container _documents = database.GetContainer(CosmosNames.Documents);
 
@@ -22,7 +22,7 @@ public sealed class CosmosDocumentStore(Database database, TimeProvider? time = 
             .WithParameter("@tenant", tenant);
 
         var items = await QueryAsync(query, new QueryRequestOptions { PartitionKey = new PartitionKey(tenant) }, cancellationToken);
-        return items.Select(i => i.ToDocument()).ToList();
+        return [.. items.Select(i => i.ToDocument())];
     }
 
     public async Task<Document?> FindAsync(Guid id, CancellationToken cancellationToken) =>
@@ -38,7 +38,7 @@ public sealed class CosmosDocumentStore(Database database, TimeProvider? time = 
 
     public async Task<Document?> UpdateAsync(Guid id, string title, CancellationToken cancellationToken)
     {
-        for (var attempt = 0; attempt < MaxConflictRetries; attempt++)
+        for (var attempt = 0; attempt < _maxConflictRetries; attempt++)
         {
             var current = await FindItemAsync(id, cancellationToken);
             if (current is null)
@@ -65,7 +65,7 @@ public sealed class CosmosDocumentStore(Database database, TimeProvider? time = 
             }
         }
 
-        throw new StoreUnavailableException($"Document {id} kept changing; update abandoned after {MaxConflictRetries} attempts");
+        throw new StoreUnavailableException($"Document {id} kept changing; update abandoned after {_maxConflictRetries} attempts");
     }
 
     public async Task<Document?> RemoveAsync(Guid id, CancellationToken cancellationToken)

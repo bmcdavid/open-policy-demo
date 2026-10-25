@@ -7,7 +7,7 @@ using Core.Features.Events;
 using Tests.Support;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class CosmosOutboxTests
 {
@@ -66,7 +66,7 @@ public sealed class CosmosOutboxTests
         var events = Enumerable.Range(0, 5).Select(_ => Changed()).ToList();
         var published = new List<OutboxEvent>();
 
-        await CosmosOutbox.RelayAsync(events.Select(OutboxFeedItem).ToList(), Recording(published), Ct);
+        await CosmosOutbox.RelayAsync([.. events.Select(OutboxFeedItem)], Recording(published), Ct);
 
         published.Select(e => e.Id).Should().Equal(events.Select(e => e.Id));
     }

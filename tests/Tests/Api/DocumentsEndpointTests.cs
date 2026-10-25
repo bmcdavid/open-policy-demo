@@ -4,6 +4,7 @@ using System.Text.Json;
 using AwesomeAssertions;
 using Core.Features.Authorization;
 using Core.Features.Documents;
+using Core.Features.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Support;
 using Xunit;
@@ -12,7 +13,7 @@ namespace Tests.Api;
 
 public sealed class DocumentsEndpointTests
 {
-    private static readonly string[] Reader = ["reader"];
+    private static readonly string[] _reader = ["reader"];
 
     private static Uri Route(string path) => new(path, UriKind.Relative);
 
@@ -36,7 +37,7 @@ public sealed class DocumentsEndpointTests
     public async Task MissingEnvironmentHeaderReturns400()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Reader, "acme");
+        using var client = factory.CreateClientFor("u1", _reader, "acme");
 
         using var response = await client.GetAsync(Route("/documents"), Ct);
 
@@ -52,7 +53,7 @@ public sealed class DocumentsEndpointTests
     public async Task InvalidEnvironmentValuesReturn400(string environment)
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Reader, "acme", environment);
+        using var client = factory.CreateClientFor("u1", _reader, "acme", environment);
 
         using var response = await client.GetAsync(Route("/documents"), Ct);
 
@@ -65,7 +66,7 @@ public sealed class DocumentsEndpointTests
     {
         await using var factory = new ApiFactory();
         factory.Policy.Decide = _ => new PolicyDecision(false, ["cross-tenant access denied"]);
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
         var document = await SeededDocumentAsync(factory, "globex");
 
         using var response = await client.GetAsync(Route($"/documents/{document.Id}"), Ct);
@@ -79,7 +80,7 @@ public sealed class DocumentsEndpointTests
     public async Task AllowedGetReturnsDocument()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
         var document = await SeededDocumentAsync(factory, "acme");
 
         var body = await client.GetFromJsonAsync<Document>(Route($"/documents/{document.Id}"), Ct);
@@ -91,7 +92,7 @@ public sealed class DocumentsEndpointTests
     public async Task MissingDocumentReturns404WithoutCallingPolicy()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
 
         using var response = await client.GetAsync(Route($"/documents/{Guid.NewGuid()}"), Ct);
 
@@ -104,7 +105,7 @@ public sealed class DocumentsEndpointTests
     {
         await using var factory = new ApiFactory();
         factory.Policy.Throws = new PolicyEngineUnavailableException("down");
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/documents"), Ct);
 
@@ -115,7 +116,7 @@ public sealed class DocumentsEndpointTests
     public async Task UnauditableDecisionReturns503Never200()
     {
         await using var factory = new ApiFactory { OutboxThrows = new StoreUnavailableException("cosmos down") };
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/documents"), Ct);
 
@@ -127,12 +128,12 @@ public sealed class DocumentsEndpointTests
     {
         await using var factory = new ApiFactory();
         factory.Policy.Decide = _ => new PolicyDecision(false, ["nope"]);
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/documents"), Ct);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        factory.Events.Should().ContainSingle().Which.EventType.Should().Be(Core.Features.Events.EventTypes.PolicyDecisionMade);
+        factory.Events.Should().ContainSingle().Which.EventType.Should().Be(EventTypes.PolicyDecisionMade);
     }
 
     [Fact]
@@ -179,7 +180,7 @@ public sealed class DocumentsEndpointTests
     public async Task ListPassesRequestedTenantToPolicy()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Reader, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _reader, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/documents?tenant=globex"), Ct);
 

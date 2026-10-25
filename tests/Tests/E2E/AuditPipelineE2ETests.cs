@@ -14,7 +14,7 @@ namespace Tests.E2E;
 [Collection(AppHostDefinition.Name)]
 public sealed class AuditPipelineE2ETests(AppHostFixture fixture)
 {
-    private static readonly TimeSpan PipelineTimeout = TimeSpan.FromSeconds(90);
+    private static readonly TimeSpan _pipelineTimeout = TimeSpan.FromSeconds(90);
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -50,7 +50,7 @@ public sealed class AuditPipelineE2ETests(AppHostFixture fixture)
     private async Task<AuditEntry> EventuallyAsync(string user, string tenant, Func<AuditEntry, bool> match)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
-        timeout.CancelAfter(PipelineTimeout);
+        timeout.CancelAfter(_pipelineTimeout);
 
         while (true)
         {

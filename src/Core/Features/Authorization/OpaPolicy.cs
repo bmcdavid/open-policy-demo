@@ -6,9 +6,9 @@ namespace Core.Features.Authorization;
 
 public static class OpaPolicy
 {
-    private const string DecisionPath = "v1/data/authz/decision";
+    private const string _decisionPath = "v1/data/authz/decision";
 
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public static DecidePolicy Decide(HttpClient http)
     {
@@ -20,13 +20,13 @@ public static class OpaPolicy
     {
         try
         {
-            using var response = await http.PostAsJsonAsync(DecisionPath, new OpaRequest(input), Json, cancellationToken);
+            using var response = await http.PostAsJsonAsync(_decisionPath, new OpaRequest(input), _json, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 throw new PolicyEngineUnavailableException($"OPA returned {(int)response.StatusCode}");
             }
 
-            var body = await response.Content.ReadFromJsonAsync<OpaResponse>(Json, cancellationToken);
+            var body = await response.Content.ReadFromJsonAsync<OpaResponse>(_json, cancellationToken);
             return body?.Result is { } result
                 ? new PolicyDecision(result.Allow, result.Reasons ?? [])
                 : throw new PolicyEngineUnavailableException("OPA returned no decision; is the policy bundle loaded?");

@@ -45,7 +45,7 @@ public sealed class DocumentsE2ETests(AppHostFixture fixture)
     private static async Task<string[]> ReasonsAsync(HttpResponseMessage response)
     {
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
-        return body.GetProperty("reasons").EnumerateArray().Select(e => e.GetString()!).ToArray();
+        return [.. body.GetProperty("reasons").EnumerateArray().Select(e => e.GetString()!)];
     }
 
     [Fact]

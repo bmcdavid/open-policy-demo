@@ -17,7 +17,7 @@ internal sealed class ActivityRecorder : IDisposable
         _listener = new ActivityListener
         {
             ShouldListenTo = source => source.Name is EventTracing.SourceName or ParentSourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = Stopped.Add,
         };
         ActivitySource.AddActivityListener(_listener);
@@ -28,7 +28,7 @@ internal sealed class ActivityRecorder : IDisposable
 
     public ConcurrentBag<Activity> Stopped { get; } = [];
 
-    public IReadOnlyList<Activity> InTrace(ActivityTraceId traceId) => Stopped.Where(a => a.TraceId == traceId).ToList();
+    public IReadOnlyList<Activity> InTrace(ActivityTraceId traceId) => [.. Stopped.Where(a => a.TraceId == traceId)];
 
     public void Dispose() => _listener.Dispose();
 }

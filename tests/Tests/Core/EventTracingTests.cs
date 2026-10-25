@@ -4,7 +4,7 @@ using Core.Features.Events;
 using Tests.Support;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class EventTracingTests
 {

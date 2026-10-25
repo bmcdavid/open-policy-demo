@@ -15,7 +15,7 @@ internal static class CurrentSubject
 
         return new PolicySubject(
             user.FindFirstValue(SubjectClaim) ?? string.Empty,
-            user.FindAll(RolesClaim).Select(c => c.Value).ToArray(),
+            [.. user.FindAll(RolesClaim).Select(c => c.Value)],
             user.FindFirstValue(TenantClaim) ?? string.Empty);
     }
 }

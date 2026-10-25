@@ -40,7 +40,7 @@ public static class CosmosAudit
             {
                 using var iterator = container.GetItemQueryIterator<AuditEntry>(definition, query.ContinuationToken, options);
                 var page = await iterator.ReadNextAsync(cancellationToken);
-                return new AuditPage(page.ToList(), page.ContinuationToken);
+                return new AuditPage([.. page], page.ContinuationToken);
             }
             catch (CosmosException ex)
             {

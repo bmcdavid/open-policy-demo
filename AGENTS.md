@@ -32,6 +32,15 @@ Prefer the BCL and packages already referenced. State what the dependency is for
 
 After editing any `.cs` file (or project/props file), before reporting the work complete, follow the steps in `.claude/skills/cleanup/SKILL.md` (format with `--severity info`, verify, build, unit tests). Any agent can open and follow that file; Claude Code also exposes it as `/cleanup`. Do not include unrelated formatting churn in the change.
 
+## Conventions this repo enforces
+
+- Private fields, including `const` and `static readonly`, are `_camelCase` (IDE1006 via `.editorconfig`), e.g. `_maxPageSize`.
+- Test namespaces match their folder: `Tests.Core`, `Tests.Worker`, etc. (IDE0130). Inside them `Core.` resolves to `Tests.Core`, so use a `using Core.Features...;` directive instead of writing `Core.Features...` inline.
+- Source files are UTF-8 with a byte order mark (`charset = utf-8-bom` in `.editorconfig`); `dotnet format` adds it. Don't strip it.
+- Use collection expressions (`[.. items]`) rather than `ToList()` / `ToArray()` where IDE0305 asks.
+- CI runs `dotnet format opa.slnx --severity info --verify-no-changes`, which must pass. Unfixable diagnostics are fixed by hand; do not downgrade a rule to get past it without asking.
+- Current approved `.editorconfig` opt-outs are listed there with a reason beside each: only extend that list with the user's permission.
+
 ## Write tests for new work
 
 - New behavior and bug fixes come with tests in `tests/`, placed alongside the existing tests for the area (`Api`, `Core`, `Worker`, `Cedar`, `E2E`).

@@ -10,7 +10,7 @@ internal sealed class FakePolicyClient
 
     public List<PolicyInput> Inputs { get; } = [];
 
-    public Task<PolicyDecision> DecideAsync(PolicyInput input, CancellationToken cancellationToken)
+    public Task<PolicyDecision> DecideAsync(PolicyInput input, CancellationToken _)
     {
         Inputs.Add(input);
         return Throws is null ? Task.FromResult(Decide(input)) : Task.FromException<PolicyDecision>(Throws);

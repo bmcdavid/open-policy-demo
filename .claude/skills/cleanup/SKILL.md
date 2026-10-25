@@ -13,11 +13,14 @@ Run from the repo root, in order. Stop and fix the cause if a step fails.
    dotnet format opa.slnx --severity info
    ```
 
-2. Verify nothing is left unformatted (non-zero exit means more work):
+2. Verify nothing is left unformatted, as CI does (non-zero exit means more work):
 
    ```sh
    dotnet format opa.slnx --severity info --verify-no-changes
    ```
+
+   If it still reports diagnostics, `dotnet format` cannot fix them: fix them by hand. Do not set rules to `none`
+   or add suppressions without asking (see `AGENTS.md`).
 
 3. Build, then run the unit tests (no Docker needed):
 

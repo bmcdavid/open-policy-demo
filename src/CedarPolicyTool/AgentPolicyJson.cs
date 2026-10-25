@@ -6,7 +6,7 @@ namespace CedarPolicyTool;
 
 internal static class AgentPolicyJson
 {
-    private static readonly JsonSerializerOptions Options = new()
+    private static readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
         IndentSize = 2,
@@ -16,5 +16,5 @@ internal static class AgentPolicyJson
     };
 
     public static string Serialize(IReadOnlyList<AgentPolicy> policies) =>
-        JsonSerializer.Serialize(policies, Options) + "\n";
+        JsonSerializer.Serialize(policies, _options) + "\n";
 }

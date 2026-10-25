@@ -14,8 +14,22 @@ permissions:
   contents: read
 
 jobs:
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      # --severity info also covers the .editorconfig rules set to suggestion. To fix locally, see
+      # .claude/skills/cleanup/SKILL.md.
+      - run: dotnet format opa.slnx --severity info --verify-no-changes
+
   unit:
     name: Unit tests
+    needs: format
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,6 +50,7 @@ jobs:
 
   e2e:
     name: End-to-end tests (Aspire, Docker)
+    needs: format
     # Not ubuntu-latest: on 26.04 the dotnet-coverage profiler does not initialize, so the child processes Aspire starts
     # report no coverage at all.
     runs-on: ubuntu-24.04

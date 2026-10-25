@@ -10,12 +10,12 @@ public static class EventTracing
 {
     public const string SourceName = "Core.Events";
 
-    private static readonly ActivitySource Source = new(SourceName);
+    private static readonly ActivitySource _source = new(SourceName);
 
     /// <summary>Starts <c>{operation} {eventType}</c> as a child of the event's trace context, or as a new trace without one.</summary>
     internal static Activity? Start(string operation, OutboxEvent outboxEvent, ActivityKind kind)
     {
         ActivityContext.TryParse(outboxEvent.TraceParent, traceState: null, isRemote: true, out var parent);
-        return Source.StartActivity($"{operation} {outboxEvent.EventType}", kind, parent);
+        return _source.StartActivity($"{operation} {outboxEvent.EventType}", kind, parent);
     }
 }

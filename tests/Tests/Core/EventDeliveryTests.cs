@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Tests.Support;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class EventDeliveryTests
 {
-    private static readonly TimeSpan DrainTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan _drainTimeout = TimeSpan.FromSeconds(5);
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -74,7 +74,7 @@ public sealed class EventDeliveryTests
 
         await delivery.Publish(Changed(), Ct);
         await delivery.Publish(Decision(), Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         everything.Should().BeEquivalentTo([EventTypes.DocumentChanged, EventTypes.PolicyDecisionMade]);
         documentsOnly.Should().Equal(EventTypes.DocumentChanged);
@@ -98,7 +98,7 @@ public sealed class EventDeliveryTests
         await using var running = Start(delivery, Sub("audit", "#", (_, _) => { during = Activity.Current; return Task.CompletedTask; }));
 
         await delivery.Publish(sent, Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         during.Should().NotBeNull();
         during!.Source.Name.Should().Be(EventTracing.SourceName);
@@ -118,7 +118,7 @@ public sealed class EventDeliveryTests
         await using var running = Start(delivery, Sub("audit", "#", (_, _) => { during = Activity.Current; return Task.CompletedTask; }));
 
         await delivery.Publish(sent, Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         during.Should().NotBeNull();
         during!.DisplayName.Should().Be("handle document.changed");
@@ -134,7 +134,7 @@ public sealed class EventDeliveryTests
         var sent = Changed();
 
         await delivery.Publish(sent, Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         seen!.Id.Should().Be(sent.Id);
         seen.Tenant.Should().Be("acme");
@@ -155,7 +155,7 @@ public sealed class EventDeliveryTests
         }));
 
         await delivery.Publish(Changed(), Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         calls.Should().Be(3);
         bus.DeadLettered("audit").Should().BeEmpty();
@@ -173,7 +173,7 @@ public sealed class EventDeliveryTests
         }));
 
         await delivery.Publish(Changed(), Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         calls.Should().Be(5);
         bus.DeadLettered("audit").Should().ContainSingle();
@@ -186,11 +186,11 @@ public sealed class EventDeliveryTests
         var called = false;
         await using var running = Start(delivery, Sub("audit", "#", (_, _) => { called = true; return Task.CompletedTask; }));
         await delivery.Publish(Changed(), Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
         called = false;
 
         bus.PublishRaw(EventTypes.DocumentChanged, "not json"u8.ToArray());
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         called.Should().BeFalse();
         bus.DeadLettered("audit").Should().ContainSingle();
@@ -207,7 +207,7 @@ public sealed class EventDeliveryTests
             Sub("cache", EventTypes.DocumentChanged, (_, _) => { cacheCalls++; return Task.CompletedTask; }));
 
         await delivery.Publish(Changed(), Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await bus.DrainAsync(_drainTimeout);
 
         cacheCalls.Should().Be(1);
         bus.DeadLettered("audit").Should().ContainSingle();
@@ -223,8 +223,8 @@ public sealed class EventDeliveryTests
         var publishing = delivery.Publish(Changed(), Ct);
         publishing.IsCompleted.Should().BeFalse();
         await using var running = Start(delivery, Sub("audit", "#", (e, _) => { received.Add(e); return Task.CompletedTask; }));
-        await publishing.WaitAsync(DrainTimeout, Ct);
-        await bus.DrainAsync(DrainTimeout);
+        await publishing.WaitAsync(_drainTimeout, Ct);
+        await bus.DrainAsync(_drainTimeout);
 
         received.Should().ContainSingle();
     }
@@ -240,7 +240,7 @@ public sealed class EventDeliveryTests
             await Task.Delay(Timeout.Infinite, token);
         }));
         await delivery.Publish(Changed(), Ct);
-        await started.Task.WaitAsync(DrainTimeout, Ct);
+        await started.Task.WaitAsync(_drainTimeout, Ct);
 
         await running.DisposeAsync();
 
@@ -256,7 +256,7 @@ public sealed class EventDeliveryTests
 
         var act = () => delivery.RunAsync(
             [Sub("audit", "#", (_, _) => Task.CompletedTask), Sub("cache", EventTypes.DocumentChanged, (_, _) => Task.CompletedTask)],
-            cts.Token).WaitAsync(DrainTimeout, Ct);
+            cts.Token).WaitAsync(_drainTimeout, Ct);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }

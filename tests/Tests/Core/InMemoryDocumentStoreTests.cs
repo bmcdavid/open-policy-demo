@@ -3,7 +3,7 @@ using Core.Features.Authorization;
 using Core.Features.Documents;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class InMemoryDocumentStoreTests
 {

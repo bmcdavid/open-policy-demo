@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class StorageCompositionTests
 {
-    private const string EmulatorConnectionString =
+    private const string _emulatorConnectionString =
         "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
     private static HostApplicationBuilder Builder(bool cosmos = false, bool valkey = false)
@@ -19,7 +19,7 @@ public sealed class StorageCompositionTests
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings());
         if (cosmos)
         {
-            builder.Configuration["ConnectionStrings:cosmos"] = EmulatorConnectionString;
+            builder.Configuration["ConnectionStrings:cosmos"] = _emulatorConnectionString;
         }
 
         if (valkey)

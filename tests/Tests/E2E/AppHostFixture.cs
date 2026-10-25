@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
@@ -13,10 +14,12 @@ namespace Tests.E2E;
 /// <c>E2E_KEYCLOAK_URL</c> instead. In k8s mode the sidecars and the broker are not reachable, so the members that need
 /// them throw; tests that use them carry <c>[Trait("Target", "aspire-only")]</c> and are filtered out.
 /// </summary>
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal",
+    Justification = "xunit requires public test classes, and their constructors take this fixture")]
 public sealed class AppHostFixture : IAsyncLifetime
 {
-    private const string TokenPath = "/realms/opa-demo/protocol/openid-connect/token";
-    private static readonly TimeSpan StartupTimeout = TimeSpan.FromMinutes(5);
+    private const string _tokenPath = "/realms/opa-demo/protocol/openid-connect/token";
+    private static readonly TimeSpan _startupTimeout = TimeSpan.FromMinutes(5);
 
     private DistributedApplication? _app;
     private Uri? _opaUri;
@@ -43,7 +46,7 @@ public sealed class AppHostFixture : IAsyncLifetime
         _app = await builder.BuildAsync();
 
         // Covers image pulls too, so a stuck container fails the run with a timeout instead of hanging it.
-        using var timeout = new CancellationTokenSource(StartupTimeout);
+        using var timeout = new CancellationTokenSource(_startupTimeout);
         await _app.StartAsync(timeout.Token);
         await WaitForApiAsync(timeout.Token);
 
@@ -101,13 +104,15 @@ public sealed class AppHostFixture : IAsyncLifetime
             ["username"] = username,
             ["password"] = "Passw0rd!",
         });
-        using var response = await http.PostAsync(new Uri(TokenPath, UriKind.Relative), form);
+        using var response = await http.PostAsync(new Uri(_tokenPath, UriKind.Relative), form);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         return body.GetProperty("access_token").GetString()!;
     }
 }
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal",
+    Justification = "xunit collection definitions sit alongside the public test classes that use them")]
 [CollectionDefinition(Name)]
 public sealed class AppHostDefinition : ICollectionFixture<AppHostFixture>
 {

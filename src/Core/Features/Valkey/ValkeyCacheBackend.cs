@@ -23,7 +23,7 @@ public sealed class ValkeyCacheBackend(IConnectionMultiplexer connection) : ICac
     public Task RemoveAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken) =>
         RunAsync("remove", async database =>
         {
-            await database.KeyDeleteAsync(keys.Select(k => (RedisKey)k).ToArray());
+            await database.KeyDeleteAsync([.. keys.Select(k => (RedisKey)k)]);
             return true;
         });
 

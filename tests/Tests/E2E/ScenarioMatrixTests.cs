@@ -10,7 +10,7 @@ namespace Tests.E2E;
 [Collection(AppHostDefinition.Name)]
 public sealed class ScenarioMatrixTests(AppHostFixture fixture, ITestOutputHelper output)
 {
-    private static readonly (string User, string[] Roles, string Tenant)[] Users =
+    private static readonly (string User, string[] Roles, string Tenant)[] _users =
     [
         ("reader-acme", ["reader"], "acme"),
         ("editor-acme", ["editor"], "acme"),
@@ -20,10 +20,10 @@ public sealed class ScenarioMatrixTests(AppHostFixture fixture, ITestOutputHelpe
         ("platform-admin", ["platform-admin"], "platform"),
     ];
 
-    private static readonly string[] Tenants = ["acme", "globex"];
-    private static readonly string[] Environments = ["dev", "staging", "prod"];
+    private static readonly string[] _tenants = ["acme", "globex"];
+    private static readonly string[] _environments = ["dev", "staging", "prod"];
 
-    private static readonly string[] Actions =
+    private static readonly string[] _actions =
         [PolicyActions.List, PolicyActions.Read, PolicyActions.Create, PolicyActions.Update, PolicyActions.Delete, PolicyActions.Audit];
 
     /// <summary>Independent oracle for the policy; deliberately written separately from the rego.</summary>
@@ -72,13 +72,13 @@ public sealed class ScenarioMatrixTests(AppHostFixture fixture, ITestOutputHelpe
         var table = new StringBuilder($"[{engineName}] user | resource tenant | env | action | decision | reasons\n");
         var mismatches = new List<string>();
 
-        foreach (var (user, roles, tenant) in Users)
+        foreach (var (user, roles, tenant) in _users)
         {
-            foreach (var resourceTenant in Tenants)
+            foreach (var resourceTenant in _tenants)
             {
-                foreach (var environment in Environments)
+                foreach (var environment in _environments)
                 {
-                    foreach (var action in Actions)
+                    foreach (var action in _actions)
                     {
                         var input = new PolicyInput(
                             new PolicySubject(user, roles, tenant), environment, action, new PolicyResource("document", resourceTenant, "d1"));

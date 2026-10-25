@@ -15,12 +15,12 @@ public delegate EnvironmentResolution ResolveEnvironment(string? headerValue);
 /// </summary>
 public static class DeploymentEnvironment
 {
-    private const string Unknown = DemoEnvironments.HeaderName + " must be one of dev, staging, prod";
-    private const string NotAllowed = "environment not allowed in this deployment";
+    private const string _unknown = DemoEnvironments.HeaderName + " must be one of dev, staging, prod";
+    private const string _notAllowed = "environment not allowed in this deployment";
 
     public static ResolveEnvironment Create(IReadOnlyCollection<string>? allowed, string? defaultEnvironment)
     {
-        IReadOnlyCollection<string> allowList = allowed is { Count: > 0 } given ? given : DemoEnvironments.All;
+        var allowList = allowed is { Count: > 0 } given ? given : DemoEnvironments.All;
         foreach (var name in allowList)
         {
             if (!DemoEnvironments.TryParse(name, out _))
@@ -41,12 +41,12 @@ public static class DeploymentEnvironment
             var value = string.IsNullOrEmpty(headerValue) ? fallback : headerValue;
             if (!DemoEnvironments.TryParse(value, out var environment))
             {
-                return new EnvironmentResolution(null, Unknown);
+                return new EnvironmentResolution(null, _unknown);
             }
 
             return allowedSet.Contains(environment)
                 ? new EnvironmentResolution(environment, null)
-                : new EnvironmentResolution(null, NotAllowed);
+                : new EnvironmentResolution(null, _notAllowed);
         };
     }
 

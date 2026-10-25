@@ -9,8 +9,8 @@ namespace Api.Features.Audit;
 
 internal static class ConfigureServicesAndEndpoints
 {
-    private const int DefaultPageSize = 50;
-    private const int MaxPageSize = 100;
+    private const int _defaultPageSize = 50;
+    private const int _maxPageSize = 100;
 
     public static void MapAuditEndpoints(this WebApplication app)
     {
@@ -34,5 +34,5 @@ internal static class ConfigureServicesAndEndpoints
     }
 
     private static int ClampPageSize(int? requested) =>
-        requested is null or <= 0 ? DefaultPageSize : Math.Min(requested.Value, MaxPageSize);
+        requested is null or <= 0 ? _defaultPageSize : Math.Min(requested.Value, _maxPageSize);
 }

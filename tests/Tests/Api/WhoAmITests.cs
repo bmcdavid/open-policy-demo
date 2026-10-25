@@ -9,7 +9,7 @@ namespace Tests.Api;
 
 public sealed class WhoAmITests
 {
-    private static readonly Uri WhoAmI = new("/whoami", UriKind.Relative);
+    private static readonly Uri _whoAmI = new("/whoami", UriKind.Relative);
 
     [Fact]
     public async Task WhoamiWithoutTokenReturns401()
@@ -17,7 +17,7 @@ public sealed class WhoAmITests
         await using var factory = new ApiFactory { UseTestAuthentication = false };
         using var client = factory.CreateClient();
 
-        using var response = await client.GetAsync(WhoAmI, TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(_whoAmI, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -28,7 +28,7 @@ public sealed class WhoAmITests
         await using var factory = new ApiFactory();
         using var client = factory.CreateClientFor("u1", ["reader", "editor"], "acme");
 
-        var body = await client.GetFromJsonAsync<Dictionary<string, JsonElement>>(WhoAmI, TestContext.Current.CancellationToken);
+        var body = await client.GetFromJsonAsync<Dictionary<string, JsonElement>>(_whoAmI, TestContext.Current.CancellationToken);
 
         body!["id"].GetString().Should().Be("u1");
         body["tenant"].GetString().Should().Be("acme");

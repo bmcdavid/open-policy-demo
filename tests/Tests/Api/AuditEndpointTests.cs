@@ -12,7 +12,7 @@ namespace Tests.Api;
 
 public sealed class AuditEndpointTests
 {
-    private static readonly string[] Admin = ["admin"];
+    private static readonly string[] _admin = ["admin"];
 
     private static Uri Route(string path) => new(path, UriKind.Relative);
 
@@ -36,7 +36,7 @@ public sealed class AuditEndpointTests
     public async Task AuditAsksPolicyForTheAuditActionOnTheRequestedTenant()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/audit?tenant=globex"), Ct);
 
@@ -50,7 +50,7 @@ public sealed class AuditEndpointTests
     public async Task AuditDefaultsToTheSubjectTenant()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/audit"), Ct);
 
@@ -76,7 +76,7 @@ public sealed class AuditEndpointTests
     {
         await using var factory = new ApiFactory();
         factory.Audit = (_, _) => Task.FromResult(new AuditPage([Entry("e1"), Entry("e2")], "next"));
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/audit"), Ct);
 
@@ -93,7 +93,7 @@ public sealed class AuditEndpointTests
     public async Task PageSizeDefaultsAndIsClamped(string query, int expected)
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/audit?tenant=acme" + query), Ct);
 
@@ -105,7 +105,7 @@ public sealed class AuditEndpointTests
     public async Task AuditPassesTimeRangeAndContinuationToTheStore()
     {
         await using var factory = new ApiFactory();
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(
             Route("/audit?tenant=acme&from=2026-10-01T00:00:00Z&to=2026-10-31T00:00:00Z&continuation=abc"), Ct);
@@ -122,7 +122,7 @@ public sealed class AuditEndpointTests
     {
         await using var factory = new ApiFactory();
         factory.Audit = (_, _) => throw new StoreUnavailableException("cosmos down");
-        using var client = factory.CreateClientFor("u1", Admin, "acme", "dev");
+        using var client = factory.CreateClientFor("u1", _admin, "acme", "dev");
 
         using var response = await client.GetAsync(Route("/audit"), Ct);
 

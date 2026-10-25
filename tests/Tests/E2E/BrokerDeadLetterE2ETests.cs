@@ -11,7 +11,7 @@ namespace Tests.E2E;
 [Collection(AppHostDefinition.Name)]
 public sealed class BrokerDeadLetterE2ETests(AppHostFixture fixture)
 {
-    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -28,7 +28,7 @@ public sealed class BrokerDeadLetterE2ETests(AppHostFixture fixture)
             RabbitMqTransport.Exchange, EventTypes.DocumentChanged, mandatory: false, new BasicProperties(), System.Text.Encoding.UTF8.GetBytes(marker), Ct);
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
-        timeout.CancelAfter(Timeout);
+        timeout.CancelAfter(_timeout);
         var found = false;
         while (!found)
         {

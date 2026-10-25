@@ -7,7 +7,7 @@ namespace Core.Features.Documents;
 /// <summary>Protocol Buffers encoding (protobuf-net) for cached documents. Field numbers are part of the format: never reuse or renumber.</summary>
 internal static class DocumentCacheSerializer
 {
-    private const int FormatVersion = 1;
+    private const int _formatVersion = 1;
 
     public static byte[] Serialize(Document document)
     {
@@ -18,7 +18,7 @@ internal static class DocumentCacheSerializer
     public static byte[] Serialize(IReadOnlyCollection<Document> documents)
     {
         ArgumentNullException.ThrowIfNull(documents);
-        return Write(new CachedDocumentList { Version = FormatVersion, Items = documents.Select(CachedDocument.From).ToList() });
+        return Write(new CachedDocumentList { Version = _formatVersion, Items = [.. documents.Select(CachedDocument.From)] });
     }
 
     /// <summary>True for the failures a corrupt or foreign cache entry can cause while decoding; callers treat these as a cache miss.</summary>
@@ -29,7 +29,7 @@ internal static class DocumentCacheSerializer
         Serializer.Deserialize<CachedDocument>(bytes).ToDocument();
 
     public static List<Document> DeserializeList(ReadOnlyMemory<byte> bytes) =>
-        Serializer.Deserialize<CachedDocumentList>(bytes).Items.Select(i => i.ToDocument()).ToList();
+        [.. Serializer.Deserialize<CachedDocumentList>(bytes).Items.Select(i => i.ToDocument())];
 
     private static byte[] Write<T>(T message)
     {
@@ -55,7 +55,7 @@ internal static class DocumentCacheSerializer
         public string Title { get; set; } = string.Empty;
 
         public static CachedDocument From(Document document) =>
-            new() { Version = FormatVersion, Id = document.Id, Tenant = document.Tenant, Title = document.Title };
+            new() { Version = _formatVersion, Id = document.Id, Tenant = document.Tenant, Title = document.Title };
 
         public Document ToDocument() => new(Id, Tenant, Title);
     }

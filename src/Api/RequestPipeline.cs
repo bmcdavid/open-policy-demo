@@ -12,7 +12,7 @@ namespace Api;
 internal static class RequestPipeline
 {
     // Pure JSON API, no HTML/JS/CSS served, so the policy can be maximally strict.
-    private const string ContentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'";
+    private const string _contentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'";
 
     public static WebApplication ConfigureRequestPipelineForApi(this WebApplication app)
     {
@@ -26,7 +26,7 @@ internal static class RequestPipeline
         });
         app.Use(async (context, next) =>
         {
-            context.Response.Headers.ContentSecurityPolicy = ContentSecurityPolicy;
+            context.Response.Headers.ContentSecurityPolicy = _contentSecurityPolicy;
             context.Response.Headers.XContentTypeOptions = "nosniff";
             await next(context);
         });

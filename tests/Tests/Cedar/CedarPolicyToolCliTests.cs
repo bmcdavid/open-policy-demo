@@ -19,11 +19,11 @@ public sealed class CedarPolicyToolCliTests : IDisposable
         _dir.Delete(recursive: true);
     }
 
-    private static readonly string[] NoArguments = [];
-    private static readonly string[] MissingOutput = ["generate", "a"];
-    private static readonly string[] UnknownCommand = ["build", "a", "b"];
+    private static readonly string[] _noArguments = [];
+    private static readonly string[] _missingOutput = ["generate", "a"];
+    private static readonly string[] _unknownCommand = ["build", "a", "b"];
 
-    public static TheoryData<string[]> WrongArguments => new(NoArguments, MissingOutput, UnknownCommand);
+    public static TheoryData<string[]> WrongArguments => new(_noArguments, _missingOutput, _unknownCommand);
 
     [Fact]
     public void GenerateWritesThePoliciesFile()

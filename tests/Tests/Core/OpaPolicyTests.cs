@@ -4,13 +4,13 @@ using AwesomeAssertions;
 using Core.Features.Authorization;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class OpaPolicyTests : IDisposable
 {
     private HttpClient? _http;
 
-    private static readonly PolicyInput Input = new(
+    private static readonly PolicyInput _input = new(
         new PolicySubject("u1", ["reader"], "acme"), "dev", PolicyActions.Read, new PolicyResource("document", "acme", "d1"));
 
     private sealed class StubHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> respond) : HttpMessageHandler
@@ -43,7 +43,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, _) = Create(_ => Task.FromResult(Json("""{"result":{"allow":false,"reasons":["cross-tenant access denied"]}}""")));
 
-        var decision = await client(Input, CancellationToken.None);
+        var decision = await client(_input, CancellationToken.None);
 
         decision.Allow.Should().BeFalse();
         decision.Reasons.Should().ContainSingle().Which.Should().Be("cross-tenant access denied");
@@ -54,7 +54,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, handler) = Create(_ => Task.FromResult(Json("""{"result":{"allow":true,"reasons":[]}}""")));
 
-        await client(Input, CancellationToken.None);
+        await client(_input, CancellationToken.None);
 
         handler.RequestUri!.AbsolutePath.Should().Be("/v1/data/authz/decision");
         handler.RequestBody.Should().Contain("\"input\":{\"subject\":{\"id\":\"u1\",\"roles\":[\"reader\"],\"tenant\":\"acme\"}")
@@ -66,7 +66,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, _) = Create(_ => Task.FromResult(Json("{}", HttpStatusCode.InternalServerError)));
 
-        await FluentActions.Awaiting(() => client(Input, CancellationToken.None))
+        await FluentActions.Awaiting(() => client(_input, CancellationToken.None))
             .Should().ThrowAsync<PolicyEngineUnavailableException>();
     }
 
@@ -75,7 +75,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, _) = Create(_ => throw new HttpRequestException("refused"));
 
-        await FluentActions.Awaiting(() => client(Input, CancellationToken.None))
+        await FluentActions.Awaiting(() => client(_input, CancellationToken.None))
             .Should().ThrowAsync<PolicyEngineUnavailableException>();
     }
 
@@ -84,7 +84,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, _) = Create(_ => Task.FromResult(Json("{}")));
 
-        await FluentActions.Awaiting(() => client(Input, CancellationToken.None))
+        await FluentActions.Awaiting(() => client(_input, CancellationToken.None))
             .Should().ThrowAsync<PolicyEngineUnavailableException>();
     }
 
@@ -93,7 +93,7 @@ public sealed class OpaPolicyTests : IDisposable
     {
         var (client, _) = Create(_ => throw new TaskCanceledException("timeout"));
 
-        await FluentActions.Awaiting(() => client(Input, CancellationToken.None))
+        await FluentActions.Awaiting(() => client(_input, CancellationToken.None))
             .Should().ThrowAsync<PolicyEngineUnavailableException>();
     }
 }

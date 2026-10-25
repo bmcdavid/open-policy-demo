@@ -9,7 +9,7 @@ namespace CedarPolicyTool;
 /// <summary>Single pass over Cedar text that cuts it into statements and normalizes each one onto a single line.</summary>
 internal sealed class CedarLexer(string source)
 {
-    private const string IdKey = "id";
+    private const string _idKey = "id";
 
     private readonly List<AgentPolicy> _policies = [];
     private readonly List<CedarSourceError> _errors = [];
@@ -297,7 +297,7 @@ internal sealed class CedarLexer(string source)
         }
 
         var content = new StringBuilder();
-        foreach (var annotation in _annotations.Where(a => a.Key != IdKey))
+        foreach (var annotation in _annotations.Where(a => a.Key != _idKey))
         {
             content.Append('@').Append(annotation.Key).Append("(\"").Append(annotation.Raw).Append("\") ");
         }
@@ -321,7 +321,7 @@ internal sealed class CedarLexer(string source)
 
     private string? ReadId()
     {
-        var annotation = _annotations.Find(a => a.Key == IdKey);
+        var annotation = _annotations.Find(a => a.Key == _idKey);
         if (annotation is null)
         {
             Error(_startLine, _startColumn, "policy is missing an @id annotation");

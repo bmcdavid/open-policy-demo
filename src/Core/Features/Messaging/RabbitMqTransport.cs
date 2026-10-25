@@ -12,13 +12,13 @@ namespace Core.Features.Messaging;
 public sealed partial class RabbitMqTransport(IConnection connection, ILogger<RabbitMqTransport> logger) : IBrokerTransport
 {
     internal const string Exchange = "policy-demo.events";
-    private const string DeadLetterExchange = "policy-demo.dlx";
-    private const string TraceIdHeader = "trace-id";
-    private const string AttemptHeader = "x-attempt";
-    private const ushort Prefetch = 10;
-    private const int MaxDeclareAttempts = 20;
+    private const string _deadLetterExchange = "policy-demo.dlx";
+    private const string _traceIdHeader = "trace-id";
+    private const string _attemptHeader = "x-attempt";
+    private const ushort _prefetch = 10;
+    private const int _maxDeclareAttempts = 20;
 
-    private static readonly TimeSpan DeclareRetryDelay = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan _declareRetryDelay = TimeSpan.FromSeconds(3);
 
     /// <summary>Retries because the broker can accept connections before it is ready.</summary>
     public async Task DeclareAsync(IReadOnlyList<Subscription> subscriptions, CancellationToken cancellationToken)
@@ -32,10 +32,10 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
                 await DeclareOnceAsync(subscriptions, cancellationToken);
                 return;
             }
-            catch (Exception ex) when (attempt < MaxDeclareAttempts && ex is AlreadyClosedException or BrokerUnreachableException or OperationInterruptedException)
+            catch (Exception ex) when (attempt < _maxDeclareAttempts && ex is AlreadyClosedException or BrokerUnreachableException or OperationInterruptedException)
             {
-                LogBrokerNotReady(ex, attempt, MaxDeclareAttempts);
-                await Task.Delay(DeclareRetryDelay, cancellationToken);
+                LogBrokerNotReady(ex, attempt, _maxDeclareAttempts);
+                await Task.Delay(_declareRetryDelay, cancellationToken);
             }
         }
     }
@@ -55,7 +55,7 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
             ContentType = "application/json",
             DeliveryMode = DeliveryModes.Persistent,
             Timestamp = new AmqpTimestamp(message.OccurredAt.ToUnixTimeSeconds()),
-            Headers = message.TraceId is null ? null : new Dictionary<string, object?> { [TraceIdHeader] = message.TraceId },
+            Headers = message.TraceId is null ? null : new Dictionary<string, object?> { [_traceIdHeader] = message.TraceId },
         };
 
         await channel.BasicPublishAsync(Exchange, message.EventType, mandatory: false, properties, message.Body, cancellationToken);
@@ -67,7 +67,7 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
         ArgumentNullException.ThrowIfNull(onDelivery);
 
         await using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
-        await channel.BasicQosAsync(0, Prefetch, false, cancellationToken);
+        await channel.BasicQosAsync(0, _prefetch, false, cancellationToken);
 
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.ReceivedAsync += (sender, received) =>
@@ -81,17 +81,17 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
     {
         await using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
         await channel.ExchangeDeclareAsync(Exchange, ExchangeType.Topic, durable: true, cancellationToken: cancellationToken);
-        await channel.ExchangeDeclareAsync(DeadLetterExchange, ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
+        await channel.ExchangeDeclareAsync(_deadLetterExchange, ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
 
         foreach (var subscription in subscriptions)
         {
             var deadLetterQueue = subscription.Name + ".dlq";
             await channel.QueueDeclareAsync(deadLetterQueue, durable: true, exclusive: false, autoDelete: false, cancellationToken: cancellationToken);
-            await channel.QueueBindAsync(deadLetterQueue, DeadLetterExchange, subscription.Name, cancellationToken: cancellationToken);
+            await channel.QueueBindAsync(deadLetterQueue, _deadLetterExchange, subscription.Name, cancellationToken: cancellationToken);
 
             var arguments = new Dictionary<string, object?>
             {
-                ["x-dead-letter-exchange"] = DeadLetterExchange,
+                ["x-dead-letter-exchange"] = _deadLetterExchange,
                 ["x-dead-letter-routing-key"] = subscription.Name,
             };
             await channel.QueueDeclareAsync(subscription.Name, durable: true, exclusive: false, autoDelete: false, arguments, cancellationToken: cancellationToken);
@@ -136,7 +136,7 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
     {
         var headers = new Dictionary<string, object?>(received.BasicProperties.Headers ?? new Dictionary<string, object?>())
         {
-            [AttemptHeader] = attempt,
+            [_attemptHeader] = attempt,
         };
         var properties = new BasicProperties(received.BasicProperties) { Headers = headers };
 
@@ -145,7 +145,7 @@ public sealed partial class RabbitMqTransport(IConnection connection, ILogger<Ra
     }
 
     private static int AttemptsFrom(IDictionary<string, object?>? headers) =>
-        headers is not null && headers.TryGetValue(AttemptHeader, out var value) && value is int attempts ? attempts : 0;
+        headers is not null && headers.TryGetValue(_attemptHeader, out var value) && value is int attempts ? attempts : 0;
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "RabbitMQ is not ready (attempt {Attempt} of {Max}); retrying")]
     private partial void LogBrokerNotReady(Exception exception, int attempt, int max);

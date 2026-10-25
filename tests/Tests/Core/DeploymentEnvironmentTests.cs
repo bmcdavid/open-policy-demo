@@ -3,7 +3,7 @@ using Core.Features.Authorization;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed class DeploymentEnvironmentTests
 {

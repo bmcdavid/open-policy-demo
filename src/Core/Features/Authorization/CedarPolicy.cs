@@ -7,9 +7,9 @@ namespace Core.Features.Authorization;
 
 public static class CedarPolicy
 {
-    private const string DecisionPath = "v1/is_authorized";
+    private const string _decisionPath = "v1/is_authorized";
 
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
@@ -36,18 +36,13 @@ public static class CedarPolicy
                     ResourceTenant: input.Resource.Tenant,
                     Environment: input.Environment));
 
-            using var response = await http.PostAsJsonAsync(DecisionPath, cedarRequest, Json, cancellationToken);
+            using var response = await http.PostAsJsonAsync(_decisionPath, cedarRequest, _json, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 throw new PolicyEngineUnavailableException($"Cedar returned {(int)response.StatusCode}");
             }
 
-            var body = await response.Content.ReadFromJsonAsync<CedarResponse>(Json, cancellationToken);
-            if (body is null)
-            {
-                throw new PolicyEngineUnavailableException("Cedar returned no decision; is cedar-agent running?");
-            }
-
+            var body = await response.Content.ReadFromJsonAsync<CedarResponse>(_json, cancellationToken) ?? throw new PolicyEngineUnavailableException("Cedar returned no decision; is cedar-agent running?");
             var allow = string.Equals(body.Decision, "Allow", StringComparison.OrdinalIgnoreCase);
             if (allow)
             {

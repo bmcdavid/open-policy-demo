@@ -11,7 +11,7 @@ using Worker.Features.Audit;
 using Worker.Features.CacheInvalidation;
 using Xunit;
 
-namespace Tests.WorkerFeatures;
+namespace Tests.Worker;
 
 /// <summary>The relay, audit and cache-invalidation flow wired together over the in-memory transport: no Docker.</summary>
 public sealed class PipelineWithoutDockerTests

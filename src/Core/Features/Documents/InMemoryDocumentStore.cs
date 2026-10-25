@@ -16,7 +16,7 @@ public sealed class InMemoryDocumentStore : IDocumentStore
 
     public Task<IReadOnlyList<Document>> ListAsync(string tenant, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Document>>(
-            _documents.Values.Where(d => d.Tenant == tenant).OrderBy(d => d.Title, StringComparer.Ordinal).ToList());
+            [.. _documents.Values.Where(d => d.Tenant == tenant).OrderBy(d => d.Title, StringComparer.Ordinal)]);
 
     public Task<Document?> FindAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(_documents.GetValueOrDefault(id));

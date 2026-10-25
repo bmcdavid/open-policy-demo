@@ -8,7 +8,7 @@ using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using Xunit;
 
-namespace Tests.CoreFeatures;
+namespace Tests.Core;
 
 public sealed partial class ServiceDefaultsTests
 {
@@ -63,13 +63,13 @@ public sealed partial class ServiceDefaultsTests
         builder.AddServiceDefaults().Should().BeSameAs(builder);
     }
 
-    private const string EmulatorConnectionString =
+    private const string _emulatorConnectionString =
         "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
     private static string ResolvedCosmosDatabase(string? configured)
     {
         var builder = Builder();
-        builder.Configuration["ConnectionStrings:cosmos"] = EmulatorConnectionString;
+        builder.Configuration["ConnectionStrings:cosmos"] = _emulatorConnectionString;
         if (configured is not null)
         {
             builder.Configuration["Cosmos:Database"] = configured;

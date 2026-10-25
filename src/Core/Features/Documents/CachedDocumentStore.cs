@@ -5,7 +5,7 @@ namespace Core.Features.Documents;
 /// <summary>Read-through cache over another store; created through <see cref="DocumentCache.Wrap"/>.</summary>
 internal sealed partial class CachedDocumentStore(IDocumentStore inner, ICacheBackend backend, ILogger logger) : IDocumentStore
 {
-    private static readonly TimeSpan TimeToLive = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan _timeToLive = TimeSpan.FromSeconds(60);
 
     public async Task<IReadOnlyList<Document>> ListAsync(string tenant, CancellationToken cancellationToken)
     {
@@ -92,7 +92,7 @@ internal sealed partial class CachedDocumentStore(IDocumentStore inner, ICacheBa
     {
         try
         {
-            await backend.SetAsync(key, value, TimeToLive, cancellationToken);
+            await backend.SetAsync(key, value, _timeToLive, cancellationToken);
         }
         catch (CacheUnavailableException ex)
         {

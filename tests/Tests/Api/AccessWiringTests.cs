@@ -13,13 +13,13 @@ namespace Tests.Api;
 /// </summary>
 public sealed class AccessWiringTests
 {
-    private static readonly string[] ProtectedPrefixes = ["/documents", "/audit"];
+    private static readonly string[] _protectedPrefixes = ["/documents", "/audit"];
 
     private static List<RouteEndpoint> Endpoints()
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
-        return factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>().ToList();
+        return [.. factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()];
     }
 
     private static IEnumerable<Type> ParameterTypes(RouteEndpoint endpoint) =>
@@ -29,7 +29,7 @@ public sealed class AccessWiringTests
     public void EveryRouteUnderAProtectedPrefixDeclaresItsAccessRequirement()
     {
         var undeclared = Endpoints()
-            .Where(e => ProtectedPrefixes.Any(p => e.RoutePattern.RawText!.StartsWith(p, StringComparison.Ordinal)))
+            .Where(e => _protectedPrefixes.Any(p => e.RoutePattern.RawText!.StartsWith(p, StringComparison.Ordinal)))
             .Where(e => e.Metadata.GetMetadata<AccessRequirement>() is null)
             .Select(e => $"{string.Join(',', e.Metadata.GetMetadata<HttpMethodMetadata>()!.HttpMethods)} {e.RoutePattern.RawText}");
 

@@ -7,7 +7,7 @@ namespace CedarPolicyTool;
 
 internal static class CedarPolicyGeneration
 {
-    private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly UTF8Encoding _utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>Writes the cedar-agent policies file from a Cedar source file; the output is untouched unless the source is valid.</summary>
     public static void Generate(string cedarPath, string outputPath)
@@ -23,7 +23,7 @@ internal static class CedarPolicyGeneration
         Directory.CreateDirectory(directory);
 
         var temp = outputPath + ".tmp";
-        File.WriteAllText(temp, AgentPolicyJson.Serialize(result.Policies), Utf8NoBom);
+        File.WriteAllText(temp, AgentPolicyJson.Serialize(result.Policies), _utf8NoBom);
         File.Move(temp, outputPath, overwrite: true);
     }
 }

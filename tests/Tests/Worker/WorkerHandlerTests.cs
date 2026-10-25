@@ -6,7 +6,7 @@ using Worker.Features.Audit;
 using Worker.Features.CacheInvalidation;
 using Xunit;
 
-namespace Tests.WorkerFeatures;
+namespace Tests.Worker;
 
 public sealed class WorkerHandlerTests
 {
