@@ -1,4 +1,4 @@
-using Api.Features.Authorization;
+﻿using Api.Features.Authorization;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;

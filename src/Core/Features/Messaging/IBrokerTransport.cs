@@ -1,4 +1,4 @@
-namespace Core.Features.Messaging;
+﻿namespace Core.Features.Messaging;
 
 /// <summary>One consumer's interest: a queue name, the event types bound to it ('#' for all) and what to do with each event.</summary>
 public sealed record Subscription(string Name, string BindingKey, HandleEvent Handle);

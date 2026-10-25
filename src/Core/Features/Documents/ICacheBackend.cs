@@ -1,4 +1,4 @@
-namespace Core.Features.Documents;
+﻿namespace Core.Features.Documents;
 
 /// <summary>
 /// The byte-level cache seam: a key/value store with expiry. The three operations share a connection, a key space and one

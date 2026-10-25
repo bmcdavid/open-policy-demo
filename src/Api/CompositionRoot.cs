@@ -1,10 +1,10 @@
-using Api.Features.Audit;
+﻿using Api.Features.Audit;
 using Api.Features.Authorization;
 using Api.Features.Documents;
 using Api.Features.Home;
+using Core.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Core.Hosting;
 
 namespace Api;
 

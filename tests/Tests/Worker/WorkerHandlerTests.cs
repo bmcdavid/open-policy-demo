@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Core.Features.Audit;
 using Core.Features.Documents;
 using Core.Features.Events;

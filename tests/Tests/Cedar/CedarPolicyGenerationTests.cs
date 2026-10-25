@@ -1,6 +1,6 @@
 ﻿using System.IO;
-using CedarPolicyTool;
 using AwesomeAssertions;
+using CedarPolicyTool;
 using Xunit;
 
 namespace Tests.Cedar;

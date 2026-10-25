@@ -1,13 +1,13 @@
-using Core;
+﻿using Core;
 using Core.Features.Cosmos;
 using Core.Features.Documents;
 using Core.Features.Events;
 using Core.Features.Messaging;
+using Core.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using Core.Hosting;
 using Worker.Features.Audit;
 using Worker.Features.CacheInvalidation;
 using Worker.Features.Relay;

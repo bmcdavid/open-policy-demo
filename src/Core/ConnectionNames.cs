@@ -1,4 +1,4 @@
-namespace Core;
+﻿namespace Core;
 
 /// <summary>Resource names shared by the AppHost and the services it wires up (Aspire connection string names).</summary>
 public static class ConnectionNames

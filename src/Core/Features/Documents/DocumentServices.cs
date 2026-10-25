@@ -1,4 +1,4 @@
-using Core.Features.Audit;
+﻿using Core.Features.Audit;
 using Core.Features.Cosmos;
 using Core.Features.Events;
 using Core.Hosting;

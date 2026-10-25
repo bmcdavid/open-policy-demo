@@ -1,4 +1,4 @@
-namespace Core.Features.Documents;
+﻿namespace Core.Features.Documents;
 
 public sealed class StoreUnavailableException : Exception
 {

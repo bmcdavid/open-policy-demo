@@ -19,8 +19,4 @@
     <ProjectReference Include="..\..\src\AppHost\AppHost.csproj" />
     <ProjectReference Include="..\..\src\CedarPolicyTool\CedarPolicyTool.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <!-- Transitive via Aspire; local demo orchestration only. Remove when Aspire updates MessagePack. -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-qhrr-8q5h-9q3h" />
-  </ItemGroup>
 </Project>

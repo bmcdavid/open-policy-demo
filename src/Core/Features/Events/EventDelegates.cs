@@ -1,4 +1,4 @@
-namespace Core.Features.Events;
+﻿namespace Core.Features.Events;
 
 /// <summary>Durably records an event outside of any document write (for example a policy decision).</summary>
 public delegate Task WriteOutboxEvent(OutboxEvent outboxEvent, CancellationToken cancellationToken);

@@ -1,9 +1,9 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
+using Core.Hosting;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Core.Hosting;
-using Microsoft.Azure.Cosmos;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using Xunit;

@@ -1,4 +1,4 @@
-using Core.Features.Authorization;
+﻿using Core.Features.Authorization;
 
 namespace Tests.Support;
 

@@ -26,7 +26,7 @@ internal static class BuildInfoExtensions
         return app;
     }
 
-    private static Dictionary<string,object> GetBuildInfo(this IHostEnvironment hostEnvironment)
+    private static Dictionary<string, object> GetBuildInfo(this IHostEnvironment hostEnvironment)
     {
         var buildData = BuildInfoAttribute.BuildInfoAttributes;
         var info = new Dictionary<string, object>(buildData)

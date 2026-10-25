@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Core.Features.Events;
 
 namespace Core.Features.Audit;

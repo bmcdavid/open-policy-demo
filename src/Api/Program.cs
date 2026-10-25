@@ -1,4 +1,4 @@
-using Api;
+﻿using Api;
 using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);

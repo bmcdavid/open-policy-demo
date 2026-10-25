@@ -1,5 +1,5 @@
-﻿using CedarPolicyTool;
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
+using CedarPolicyTool;
 using Xunit;
 
 namespace Tests.Cedar;

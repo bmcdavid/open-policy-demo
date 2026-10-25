@@ -1,4 +1,4 @@
-using Core.Features.Authorization;
+﻿using Core.Features.Authorization;
 using Core.Features.Documents;
 using Core.Features.Events;
 using Microsoft.AspNetCore.Builder;

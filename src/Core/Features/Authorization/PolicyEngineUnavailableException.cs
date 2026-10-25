@@ -1,4 +1,4 @@
-namespace Core.Features.Authorization;
+﻿namespace Core.Features.Authorization;
 
 public sealed class PolicyEngineUnavailableException : Exception
 {

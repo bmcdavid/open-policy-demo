@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <Company>TheStudioC</Company>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>

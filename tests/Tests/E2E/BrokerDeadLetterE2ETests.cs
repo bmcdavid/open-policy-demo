@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Core.Features.Events;
 using Core.Features.Messaging;
 using RabbitMQ.Client;

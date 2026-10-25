@@ -1,9 +1,9 @@
+﻿using Api.Features.Audit;
 using Api.Features.Authorization;
-using Core;
-using Core.Features.Authorization;
-using Api.Features.Audit;
 using Api.Features.Documents;
 using Api.Features.Home;
+using Core;
+using Core.Features.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Serilog;
 

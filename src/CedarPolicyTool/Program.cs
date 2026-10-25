@@ -1,1 +1,1 @@
-return CedarPolicyTool.Cli.Run(args, System.Console.Error);
+﻿return CedarPolicyTool.Cli.Run(args, System.Console.Error);

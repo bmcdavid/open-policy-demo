@@ -1,4 +1,4 @@
-using Core.Features.Events;
+﻿using Core.Features.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Features.Documents;

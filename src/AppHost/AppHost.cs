@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.IO;
-using CedarPolicyTool;
 using Aspire.Hosting;
-using Core;
 using Aspire.Hosting.ApplicationModel;
+using CedarPolicyTool;
+using Core;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -22,8 +22,8 @@ const string KeycloakEndpoint = "oidc";
 const string BundlesVolume = "opa-bundles";
 
 var keycloak = builder.AddKeycloak("keycloak")
-    .WithEnvironment("KC_BOOTSTRAP_ADMIN_USERNAME","admin")
-    .WithEnvironment("KC_BOOTSTRAP_ADMIN_PASSWORD","admin")
+    .WithEnvironment("KC_BOOTSTRAP_ADMIN_USERNAME", "admin")
+    .WithEnvironment("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin")
     .WithHttpEndpoint(port: 8080, targetPort: 8080, name: KeycloakEndpoint)
     .WithRealmImport("./keycloak");
 

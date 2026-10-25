@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AwesomeAssertions;
 using Core.Features.Events;
 using Tests.Support;

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Core.Features.Documents;
 using Core.Features.Events;
 using Microsoft.Azure.Cosmos;

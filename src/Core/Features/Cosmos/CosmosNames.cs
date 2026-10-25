@@ -1,4 +1,4 @@
-namespace Core.Features.Cosmos;
+﻿namespace Core.Features.Cosmos;
 
 public static class CosmosNames
 {

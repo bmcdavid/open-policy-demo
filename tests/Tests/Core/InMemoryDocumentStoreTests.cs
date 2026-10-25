@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Core.Features.Authorization;
 using Core.Features.Documents;
 using Xunit;

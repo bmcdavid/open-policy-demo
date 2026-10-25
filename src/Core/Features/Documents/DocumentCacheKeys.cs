@@ -1,4 +1,4 @@
-namespace Core.Features.Documents;
+﻿namespace Core.Features.Documents;
 
 /// <summary>The version segment must change whenever the cached encoding changes, so old entries are never decoded as the new format.</summary>
 internal static class DocumentCacheKeys

@@ -1,4 +1,4 @@
-namespace Core.Features.Messaging;
+﻿namespace Core.Features.Messaging;
 
 internal enum RetryDecision
 {

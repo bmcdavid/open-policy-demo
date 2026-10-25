@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Core.Features.Cosmos;
 using Core.Features.Documents;
 using Core.Features.Events;

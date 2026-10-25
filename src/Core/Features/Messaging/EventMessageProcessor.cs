@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.Json;
 using Core.Features.Events;
 using Microsoft.Extensions.Logging;

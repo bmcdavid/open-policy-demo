@@ -1,4 +1,4 @@
-using Core.Features.Cosmos;
+﻿using Core.Features.Cosmos;
 using Core.Features.Events;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-namespace Core.Features.Events;
+﻿namespace Core.Features.Events;
 
 public static class EventTypes
 {
